@@ -20,7 +20,7 @@ import mime from 'react-native-mime-types'; // ✅ yarn add react-native-mime-ty
 
 const API = create({
   baseURL,
-  timeout: 15000,
+  // timeout: 15000,
   //   timeoutErrorMessage: 'Please try Again...',
 });
 
@@ -123,10 +123,7 @@ const fetchPostWithToken = (url, body, isFormData, imageKey, isArray) => {
         isFormData == true ? 'multipart/form-data' : 'application/json',
       Authorization: `Bearer ${Auth.token}`,
     },
-    body:
-      isFormData == true
-        ? createFormData(body, imageKey, isArray)
-        : JSON.stringify(body),
+    body: isFormData == true ? createFormData(body, imageKey, isArray) : body,
     redirect: 'follow',
   };
 

@@ -65,7 +65,7 @@ const LoginScreen = ({ navigation }) => {
             getValues,
             placeholder: 'Enter email',
             //   isImage: sms,
-            defaultValue: __DEV__ ? 'ahftec113@gmail.com' : '',
+            defaultValue: __DEV__ ? 'simon@simon.com' : '',
             viewStyle: { height: hp('5') },
             inputIconStyle: { flex: 0.4 },
           }}
@@ -81,7 +81,7 @@ const LoginScreen = ({ navigation }) => {
             getValues,
             placeholder: 'Enter password',
             //   isImage: locksetting,
-            defaultValue: __DEV__ ? 'Test@123' : '',
+            defaultValue: __DEV__ ? '77777777' : '',
             isSecure: true,
             inputIconStyle: styles.inputIconPassword,
             viewStyle: { height: hp('5') },

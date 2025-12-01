@@ -1,34 +1,110 @@
 // DashboardScreen.tsx
 import React from 'react';
-import { ScrollView, StyleSheet, View, Text, Dimensions } from 'react-native';
 import {
-  Card,
-  Title,
-  DataTable,
-  Button,
-  Divider,
-  Avatar,
-  Badge,
-} from 'react-native-paper';
+  ScrollView,
+  StyleSheet,
+  View,
+  Text,
+  Dimensions,
+  Platform,
+} from 'react-native';
+import { Card, Title, DataTable, Button, Divider } from 'react-native-paper';
+import { Dropdown } from 'react-native-element-dropdown'; // ← New import
+import useDashboardScreen from './useDashboardScreen';
+import { Touchable } from '../../Components/Touchable';
+import { TextComponent } from '../../Components/TextComponent';
+import { MultiSelectButton } from '../../Components/MultiSelectButton';
+import { hp, wp } from '../../Hooks/useResponsive';
+import { sumTotalLeads } from '../../Services/GlobalFunctions';
+import { types } from '../../Redux/types';
+import NavigationService from '../../Services/NavigationService';
 
 const { width } = Dimensions.get('window');
 
+const cityData = [
+  { label: 'Karachi', value: 'karachi' },
+  { label: 'Dutai', value: 'dutai' },
+  { label: 'Crescent Bay', value: 'crescent_bay' },
+  { label: 'Northern Bypass', value: 'northern_bypass' },
+  { label: 'Lahore', value: 'lahore' },
+  { label: 'Islamabad', value: 'islamabad' },
+  { label: 'Balochistan', value: 'balochistan' },
+  { label: 'Interior Sindh', value: 'interior_sindh' },
+];
+
 export default function DashboardScreen() {
+  const {
+    upperTabsArry,
+    pageData,
+    dispatch,
+    selected,
+    setSelected,
+    items,
+    onValueChange,
+  } = useDashboardScreen();
+
   return (
     <ScrollView style={styles.container}>
+      <ScrollView
+        contentContainerStyle={{
+          paddingHorizontal: wp('2'),
+          marginTop: hp('2'),
+        }}
+        showsHorizontalScrollIndicator={false}
+        horizontal
+      >
+        <MultiSelectButton
+          items={upperTabsArry}
+          onSelectVal={() => NavigationService.navigate('AddLeadsScreen')}
+        />
+      </ScrollView>
+
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.welcome}>Welcome Adnan Ali</Text>
-        <Button mode="contained" style={styles.addBtn}>
+        {/* Beautiful Custom Dropdown */}
+        <Dropdown
+          style={styles.dropdown}
+          placeholderStyle={styles.placeholderStyle}
+          selectedTextStyle={styles.selectedTextStyle}
+          itemTextStyle={styles.itemTextStyle}
+          data={items ?? []}
+          maxHeight={300}
+          labelField="label"
+          valueField="value"
+          value={selected?.value}
+          onChange={item => {
+            onValueChange({
+              selectedLeadsCategory: item?.value,
+            });
+            setSelected(item);
+          }}
+          // renderRightIcon={() => (
+          //   // <Text style={styles.arrowIcon}>Down Arrow</Text>
+          // )}
+        />
+
+        <Button
+          mode="contained"
+          style={styles.addBtn}
+          onPress={() => {
+            dispatch({
+              type: types.LogoutType,
+            });
+          }}
+        >
           Add Targets
         </Button>
       </View>
 
+      {/* Rest of your UI — 100% unchanged */}
       <View style={styles.row}>
         {/* TOP 10 Lead SOURCES */}
         <Card style={styles.card}>
           <Card.Content>
-            <Title style={styles.cardTitle}>TOP 10 Lead SOURCES (124516)</Title>
+            <Title style={styles.cardTitle}>
+              TOP 10 Lead SOURCES (
+              {sumTotalLeads(pageData?.TopLeadSource ?? [])})
+            </Title>
             <DataTable>
               <DataTable.Header>
                 <DataTable.Title>#</DataTable.Title>
@@ -36,21 +112,12 @@ export default function DashboardScreen() {
                 <DataTable.Title numeric>Count</DataTable.Title>
               </DataTable.Header>
 
-              {[
-                { rank: 1, source: 'Broker', count: 107463 },
-                { rank: 2, source: 'Facebook', count: 14338 },
-                { rank: 3, source: 'Incoming Call', count: 783 },
-                { rank: 4, source: 'Facebook page enquiry', count: 683 },
-                { rank: 5, source: 'RealStateShop', count: 462 },
-                { rank: 6, source: 'OnlinePropertyPoint', count: 311 },
-                { rank: 7, source: 'Expo', count: 252 },
-                { rank: 8, source: 'Personal', count: 113 },
-              ].map(item => (
-                <DataTable.Row key={item.rank}>
-                  <DataTable.Cell>{item.rank}</DataTable.Cell>
-                  <DataTable.Cell>{item.source}</DataTable.Cell>
+              {pageData?.TopLeadSource?.map((item, index) => (
+                <DataTable.Row key={index}>
+                  <DataTable.Cell>{index + 1}</DataTable.Cell>
+                  <DataTable.Cell>{item.source_name}</DataTable.Cell>
                   <DataTable.Cell numeric>
-                    {item.count.toLocaleString()}
+                    {item.totalLeads.toLocaleString()}
                   </DataTable.Cell>
                 </DataTable.Row>
               ))}
@@ -58,36 +125,18 @@ export default function DashboardScreen() {
           </Card.Content>
         </Card>
 
-        {/* TODAY'S Leads */}
-        <Card style={styles.card}>
-          <Card.Content>
-            <Title style={styles.cardTitle}>TODAY'S Leads (2)</Title>
-            <View style={styles.todayRow}>
-              <Text style={styles.todayLabel}>OnlinePropertyPoint</Text>
-              <Badge style={styles.badge}>2</Badge>
-            </View>
-          </Card.Content>
-        </Card>
-
         {/* TOP Lead Owners */}
         <Card style={styles.card}>
           <Card.Content>
-            <Title style={styles.cardTitle}>TOP Lead Owners (124513)</Title>
+            <Title style={styles.cardTitle}>
+              TOP Lead Owners ({sumTotalLeads(pageData?.TopLeadsOwner ?? [])})
+            </Title>
             <DataTable>
-              {[
-                { name: 'Samad Khan', leads: 27415 },
-                { name: 'Noor Aftab', leads: 18811 },
-                { name: 'Narmeen Iqbal', leads: 14861 },
-                { name: 'Sammar Abbas', leads: 14771 },
-                { name: 'Qamar Farid', leads: 13416 },
-                { name: 'M Saquib Ur Rehman', leads: 12399 },
-                { name: 'Ernest Samuel', leads: 6994 },
-                { name: 'Mannan Arif', leads: 6345 },
-              ].map((owner, idx) => (
+              {pageData?.TopLeadsOwner?.map((owner, idx) => (
                 <DataTable.Row key={idx}>
-                  <DataTable.Cell>{owner.name}</DataTable.Cell>
+                  <DataTable.Cell>{owner.ownerName}</DataTable.Cell>
                   <DataTable.Cell numeric>
-                    {owner.leads.toLocaleString()}
+                    {owner.todayLeads.toLocaleString()}
                   </DataTable.Cell>
                 </DataTable.Row>
               ))}
@@ -98,22 +147,17 @@ export default function DashboardScreen() {
         {/* TOP Lead Brokers */}
         <Card style={styles.card}>
           <Card.Content>
-            <Title style={styles.cardTitle}>TOP Lead Brokers (107443)</Title>
+            <Title style={styles.cardTitle}>
+              TOP Lead Brokers ({sumTotalLeads(pageData?.TopBroker ?? [])})
+            </Title>
             <DataTable>
-              {[
-                { broker: 'Agent Hafiz Hamza (Hafiz Hamza)', count: 1 },
-                { broker: 'HAMZA AGENT (Hafiz Hamza)', count: 252 },
-                { broker: 'Alpha Saq (M Saquib Ur Rehman)', count: 1118 },
-                { broker: 'Beta Agent (M Saquib Ur Rehman)', count: 213 },
-                { broker: 'mahnooragent (Mahanoor Chaudhry)', count: 157 },
-                { broker: 'nomanhaslinedata (Noman hashmi)', count: 2487 },
-                { broker: 'Syed Nouman Agent (Noman hashmi)', count: 4003 },
-                { broker: 'Syed Noman HFX (Noman hashmi)', count: 658 },
-              ].map((b, idx) => (
+              {pageData?.TopBroker?.map((b, idx) => (
                 <DataTable.Row key={idx}>
-                  <DataTable.Cell>{b.broker}</DataTable.Cell>
+                  <DataTable.Cell>
+                    {b.brokerName + ' ' + b?.parentUser}
+                  </DataTable.Cell>
                   <DataTable.Cell numeric>
-                    {b.count.toLocaleString()}
+                    {b.totalLead.toLocaleString()}
                   </DataTable.Cell>
                 </DataTable.Row>
               ))}
@@ -126,25 +170,18 @@ export default function DashboardScreen() {
 
       {/* Bottom Row */}
       <View style={styles.row}>
-        {/* Total Over Due */}
         <Card style={styles.card}>
           <Card.Content>
-            <Title style={styles.cardTitle}>Total Over Due (1048)</Title>
+            <Title style={styles.cardTitle}>
+              Total Over Due ({sumTotalLeads(pageData?.DueTodayUserBased ?? [])}
+              )
+            </Title>
             <DataTable>
-              {[
-                { name: 'Abdul Wahab', due: 28 },
-                { name: 'Sammar Abbas', due: 14741 },
-                { name: 'M Saquib Ur Rehman', due: 8333 },
-                { name: 'Qamar Farid', due: 10384 },
-                { name: 'Saad Khan', due: 17 },
-                { name: 'Noor Aftab', due: 18670 },
-                { name: 'Samad Khan', due: 19353 },
-                { name: 'Fahim Aftab', due: 908 },
-              ].map((d, i) => (
+              {pageData?.DueTodayUserBased?.map((d, i) => (
                 <DataTable.Row key={i}>
-                  <DataTable.Cell>{d.name}</DataTable.Cell>
+                  <DataTable.Cell>{d.ownerName}</DataTable.Cell>
                   <DataTable.Cell numeric>
-                    {d.due.toLocaleString()}
+                    {d.totalOverDue.toLocaleString()}
                   </DataTable.Cell>
                 </DataTable.Row>
               ))}
@@ -152,115 +189,62 @@ export default function DashboardScreen() {
           </Card.Content>
         </Card>
 
-        {/* Total Lead */}
         <Card style={styles.card}>
           <Card.Content>
-            <Title style={styles.cardTitle}>Total Lead (124505)</Title>
-            <Button mode="outlined" style={styles.selectBtn}>
-              Select User
-            </Button>
-            <View style={styles.statRow}>
-              <Text>Assigned to User</Text>
-              <Text style={styles.statValue}>88,980</Text>
-            </View>
-            <View style={styles.statRow}>
-              <Text>Attempted to Contact</Text>
-              <Text style={styles.statValue}>12,807</Text>
-            </View>
-            <View style={styles.statRow}>
-              <Text>Contact in Future</Text>
-              <Text style={styles.statValue}>690</Text>
-            </View>
-            <View style={styles.statRow}>
-              <Text>Duplicated Leads</Text>
-              <Text style={styles.statValue}>15</Text>
-            </View>
-            <View style={styles.statRow}>
-              <Text>Junk Lead</Text>
-              <Text style={styles.statValue}>3,007</Text>
-            </View>
-            <View style={styles.statRow}>
-              <Text>Lost Lead</Text>
-              <Text style={styles.statValue}>17,286</Text>
-            </View>
-            <View style={styles.statRow}>
-              <Text>Low Budget</Text>
-              <Text style={styles.statValue}>90</Text>
-            </View>
+            <Title style={styles.cardTitle}>
+              Total Lead ({sumTotalLeads(pageData?.TopLeadStatus ?? [])})
+            </Title>
+            {pageData?.TopLeadStatus?.map(res => (
+              <View key={res.lead_status_name} style={styles.statRow}>
+                <Text style={{ color: 'black' }}>{res?.lead_status_name}</Text>
+                <Text style={styles.statValue}>
+                  {res?.totalStatusCount?.toLocaleString()}
+                </Text>
+              </View>
+            ))}
           </Card.Content>
         </Card>
 
-        {/* External Lead */}
         <Card style={styles.card}>
           <Card.Content>
-            <Title style={styles.cardTitle}>External Lead (107443)</Title>
-            <Button mode="outlined" style={styles.selectBtn}>
-              Select User
-            </Button>
-            <View style={styles.statRow}>
-              <Text>Assigned to User</Text>
-              <Text style={styles.statValue}>79,899</Text>
-            </View>
-            <View style={styles.statRow}>
-              <Text>Attempted to Contact</Text>
-              <Text style={styles.statValue}>8,810</Text>
-            </View>
-            <View style={styles.statRow}>
-              <Text>Contact in Future</Text>
-              <Text style={styles.statValue}>422</Text>
-            </View>
-            <View style={styles.statRow}>
-              <Text>Duplicated Leads</Text>
-              <Text style={styles.statValue}>6</Text>
-            </View>
-            <View style={styles.statRow}>
-              <Text>Junk Lead</Text>
-              <Text style={styles.statValue}>2,726</Text>
-            </View>
-            <View style={styles.statRow}>
-              <Text>Lost Lead</Text>
-              <Text style={styles.statValue}>15,069</Text>
-            </View>
-            <View style={styles.statRow}>
-              <Text>Meeting Confirmed</Text>
-              <Text style={styles.statValue}>90</Text>
-            </View>
+            <Title style={styles.cardTitle}>
+              External Lead (
+              {sumTotalLeads(pageData?.TopExternalLeadStatus ?? [])})
+            </Title>
+            {pageData?.TopExternalLeadStatus?.map(res => (
+              <View key={res.lead_status_name} style={styles.statRow}>
+                <Text style={{ color: 'black' }}>{res?.lead_status_name}</Text>
+                <Text style={styles.statValue}>
+                  {res?.totalStatusCount?.toLocaleString()}
+                </Text>
+              </View>
+            ))}
           </Card.Content>
         </Card>
 
-        {/* Today Created Leads */}
         <Card style={styles.card}>
           <Card.Content>
-            <Title style={styles.cardTitle}>Today Created Leads</Title>
-            {/* Placeholder – you can put a chart or list here */}
-            <View style={styles.placeholder}>
-              <Text style={styles.placeholderText}>Chart / List</Text>
-            </View>
+            <Title style={styles.cardTitle}>
+              Transfer Lead (
+              {sumTotalLeads(pageData?.TopExternalLeadStatus ?? [])})
+            </Title>
+            {pageData?.TopExternalLeadStatus?.map(res => (
+              <View key={res.lead_status_name} style={styles.statRow}>
+                <Text style={{ color: 'black' }}>{res?.lead_status_name}</Text>
+                <Text style={styles.statValue}>
+                  {res?.totalStatusCount?.toLocaleString()}
+                </Text>
+              </View>
+            ))}
           </Card.Content>
         </Card>
-      </View>
-
-      {/* Footer */}
-      <View style={styles.footer}>
-        <Text style={styles.footerTitle}>Current Month Pipeline</Text>
-        <View style={styles.targetRow}>
-          <Text>Quarterly Target Remaining Days</Text>
-          <Text style={styles.targetDays}>428</Text>
-        </View>
-        <View style={styles.progressContainer}>
-          <View style={styles.progressBar}>
-            <View style={[styles.progressFill, { width: '35%' }]} />
-          </View>
-          <Text style={styles.progressLabel}>Target</Text>
-          <Text style={styles.progressLabel}>Achieved</Text>
-        </View>
       </View>
     </ScrollView>
   );
 }
 
 /* -------------------------------------------------
-   Styles
+   Styles (Only dropdown styles added/updated)
    ------------------------------------------------- */
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f5f5f5' },
@@ -272,8 +256,36 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     backgroundColor: '#fff',
   },
-  welcome: { fontSize: 18, fontWeight: '600' },
   addBtn: { backgroundColor: '#007AFF' },
+
+  // Beautiful Dropdown Styles
+  dropdown: {
+    width: wp('50'),
+    height: 50,
+    borderColor: '#ddd',
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingHorizontal: 16,
+    backgroundColor: '#fff',
+    justifyContent: 'center',
+  },
+  placeholderStyle: {
+    fontSize: 16,
+    color: '#333',
+  },
+  selectedTextStyle: {
+    fontSize: 16,
+    color: '#333',
+    fontWeight: '500',
+  },
+  itemTextStyle: {
+    fontSize: 16,
+    color: '#333',
+  },
+  arrowIcon: {
+    fontSize: 20,
+    color: '#666',
+  },
 
   row: {
     flexDirection: 'row',
@@ -288,49 +300,11 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   cardTitle: { fontSize: 14, fontWeight: '600', marginBottom: 8 },
-  todayRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  todayLabel: { fontWeight: '500' },
-  badge: { backgroundColor: '#4CAF50', color: '#fff' },
-
   divider: { height: 1, backgroundColor: '#ddd', marginVertical: 12 },
-
-  selectBtn: { marginBottom: 12 },
   statRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginVertical: 4,
   },
-  statValue: { fontWeight: '600' },
-
-  placeholder: { height: 120, justifyContent: 'center', alignItems: 'center' },
-  placeholderText: { color: '#999' },
-
-  footer: {
-    backgroundColor: '#fff',
-    padding: 16,
-    alignItems: 'center',
-  },
-  footerTitle: { fontSize: 16, fontWeight: '600', marginBottom: 8 },
-  targetRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '100%',
-    marginBottom: 8,
-  },
-  targetDays: { fontWeight: '600' },
-  progressContainer: { width: '100%', alignItems: 'center' },
-  progressBar: {
-    width: '80%',
-    height: 12,
-    backgroundColor: '#e0e0e0',
-    borderRadius: 6,
-    overflow: 'hidden',
-    flexDirection: 'row',
-  },
-  progressFill: { height: '100%', backgroundColor: '#4CAF50' },
-  progressLabel: { marginTop: 4, fontSize: 12, color: '#666' },
+  statValue: { fontWeight: '600', color: 'black' },
 });

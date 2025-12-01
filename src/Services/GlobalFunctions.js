@@ -1229,6 +1229,21 @@ function getUrlType(url) {
   }
 }
 
+function sumTotalLeads(data) {
+  return data.reduce(
+    (sum, item) =>
+      sum +
+      (item.totalLeads ||
+        item?.totalStatusCount ||
+        item?.totalOverDue ||
+        item?.totalLead ||
+        item?.todayLeads ||
+        item?.totalStatusCount ||
+        0),
+    0,
+  );
+}
+
 export {
   getSingleCharacter,
   getProperLocation,
@@ -1295,4 +1310,5 @@ export {
   getUsedPercentage,
   parseLogString,
   getUrlType,
+  sumTotalLeads,
 };

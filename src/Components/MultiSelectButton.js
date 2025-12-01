@@ -41,6 +41,7 @@ export const MultiSelectButton = ({
           item?.sqYd ??
           item?.supplier_name ??
           item?.val ??
+          item?.top_menus ??
           item
         }
         style={{

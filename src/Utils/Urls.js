@@ -1,13 +1,13 @@
 const getCredentials = () => {
   if (__DEV__)
     return {
-      baseURL: 'https:www.ahftechnologies.com/',
+      baseURL: 'https:www.sahfgroup.com/',
       imageURL: 'https://www.realstateshop.com/assets/img/',
     };
   else {
     console.log = () => {};
     return {
-      baseURL: 'https:www.ahftechnologies.com/',
+      baseURL: 'https:www.sahfgroup.com/',
       imageURL: 'https://www.realstateshop.com/assets/img/',
     };
   }
@@ -33,7 +33,7 @@ export const aboutUrl = 'https://theappforcowboys.com/about_us';
 
 export const MapAPIKey = '';
 
-export const AuthUrl = 'mb_user_wrkprc_stg.htm';
+export const AuthUrl = 'mb_user_wrkprc_pl.htm';
 
 export const registerUrl = '/register';
 export const loginUrl = '/login';

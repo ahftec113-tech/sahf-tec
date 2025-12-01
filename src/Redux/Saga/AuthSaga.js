@@ -43,15 +43,28 @@ export const loginThunk =
       // const jwtToken = idTokenResult.token;
 
       // if (jwtToken) {
+      console.log('klweflksdbvkldsblkvsd', {
+        LGEmail: email,
+        LGPassword: password,
+        user_lng_val: 1231231231,
+        user_lat_val: 1231231231,
+        goingToLogin: 'LogIn',
+        user_device_desktop_val: 1,
+        user_device_mobile_val: 1,
+      });
       const { data, ok } = await loginService({
         // token: jwtToken,
-        userLoginEmail: email,
-        userLoginPassword: password,
-        rqst_ke_fntn_vl: 'usr_lg_attempt',
+        LGEmail: email,
+        LGPassword: password,
+        user_lng_val: 1231231231,
+        user_lat_val: 1231231231,
+        goingToLogin: 'LogIn',
+        user_device_desktop_val: 1,
+        user_device_mobile_val: 1,
       });
       console.log('lskdbvlksdbklvbsdsdfsdfklbvklsdbvksd', data);
       if (ok) {
-        dispatch(updateAuth(data?.data));
+        dispatch(updateAuth(data?.user));
       } else {
         console.log('lskdbvlksdbklvbsdklbvklsdbvksd', data);
         errorMessage(data?.message);

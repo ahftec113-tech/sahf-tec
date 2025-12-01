@@ -29,5 +29,7 @@ export { default as PostIssueFormScreen } from './PostIssueFormScreen';
 export { default as DashboardScreen } from './DashboardScreen';
 export { default as LeadListScreen } from './LeadListScreen';
 export { default as LeadFilterScreen } from './LeadFilterScreen';
+export { default as LeadDetailScreen } from './LeadDetailScreen';
+export { default as AddLeadsScreen } from './AddLeadsScreen';
 
 export { default as ListViewScreen } from '../Components/ListViewComp';

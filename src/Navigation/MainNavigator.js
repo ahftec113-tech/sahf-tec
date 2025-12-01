@@ -43,16 +43,24 @@ function MainNavigator() {
         {isLogin && (
           <>
             <Stack.Screen
+              name="DashboardScreen"
+              component={Screens.DashboardScreen}
+            />
+            <Stack.Screen
+              name="AddLeadsScreen"
+              component={Screens.AddLeadsScreen}
+            />
+            <Stack.Screen
+              name="LeadDetailScreen"
+              component={Screens.LeadDetailScreen}
+            />
+            <Stack.Screen
               name="LeadFilterScreen"
               component={Screens.LeadFilterScreen}
             />
             <Stack.Screen
               name="LeadListScreen"
               component={Screens.LeadListScreen}
-            />
-            <Stack.Screen
-              name="DashboardScreen"
-              component={Screens.DashboardScreen}
             />
             <Stack.Screen
               name="CodeTypeSelectorScreen"
