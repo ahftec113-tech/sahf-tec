@@ -37,4 +37,6 @@ export const types = {
   createCopy: 'createCopy',
   deleteCopy: 'deleteCopy',
   clearCopies: 'clearCopies',
+  makeAtt: 'makeAtt',
+  removeAtt: 'removeAtt',
 };

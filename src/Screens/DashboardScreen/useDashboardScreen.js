@@ -26,7 +26,13 @@ const useDashboardScreen = () => {
     onSuccess: ({ ok, data }) => {
       if (ok) {
         console.log('kjsdkjsdjksdnknskdnklsdnklnsd', data?.data);
-        setUpperTabsArry(data?.data?.TopMenuLink);
+        setUpperTabsArry([
+          ...data?.data?.TopMenuLink,
+          {
+            id: 'attendance',
+            top_menus: 'Mark Attendance',
+          },
+        ]);
         const modifyData = data?.data?.LeadsCategory.map(res => ({
           label: res?.leads_category,
           value: res?.id,

@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
 import useReduxStore from '../../Hooks/UseReduxStore';
-import { errorMessage } from '../../Config/NotificationMessage';
+import { errorMessage, successMessage } from '../../Config/NotificationMessage';
 import { useMutation } from '@tanstack/react-query';
 import { AuthUrl } from '../../Utils/Urls';
 import API from '../../Utils/helperFunc';
 
-const useAddLeadScreen = () => {
+const useAddLeadScreen = ({ goBack }) => {
+  const currentDate = new Date();
+
   const [category, setCategory] = useState(null);
   const [source, setSource] = useState(null);
   const [campaignName, setCampaignName] = useState(null);
@@ -21,6 +23,9 @@ const useAddLeadScreen = () => {
   const [assignTo, setAssignTo] = useState(null);
   const [rating, setRating] = useState('Hot');
   const [status, setStatus] = useState(null);
+  const [otherText, setOtherText] = useState(null);
+  const [modalState, setModalState] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(null);
 
   const [assignToUserArry, setAssignToUserArry] = useState([]);
   const [souceArry, setSourceArry] = useState([]);
@@ -37,7 +42,8 @@ const useAddLeadScreen = () => {
     },
     onSuccess: ({ ok, data }) => {
       if (ok) {
-        console.log('kjsdkjsdjksdnknskdnklsdnklnsd', data?.data);
+        successMessage(data?.message);
+        goBack();
       } else errorMessage(data?.message);
     },
     onError: e => errorMessage(e),
@@ -69,18 +75,20 @@ const useAddLeadScreen = () => {
   const checkNum = useMutation({
     mutationFn: data => {
       return API.post(AuthUrl, {
-        add_lead_form_option: 'add_lead_form_option',
         userRoleIndicate: 'admin',
         crm_software_clients_id: userData?.crm_software_clients_id,
         selectedLeadsCategory: userData?.leads_category_id,
         allowtoEntCrmSctino: userData?.id,
         userLoginToken: token,
         userLoginIDC: userData?.id,
+        PhoneCheckExist: 'PhoneCheckExist',
+        checkLeadPhoneExist: mobile,
         rqst_ke_fntn_vl: 'usr_lg_attempt',
       });
     },
     onSuccess: ({ ok, data }) => {
       if (ok) {
+        successMessage(data?.message);
         console.log('kjsdkjsdjksdnknskdnklsdasdfdsnklnsd', data);
       } else errorMessage(data?.message);
     },
@@ -130,6 +138,13 @@ const useAddLeadScreen = () => {
     statusArry,
     categoryArry,
     checkNum,
+    otherText,
+    setOtherText,
+    modalState,
+    setModalState,
+    selectedDate,
+    setSelectedDate,
+    currentDate,
   };
 };
 export default useAddLeadScreen;

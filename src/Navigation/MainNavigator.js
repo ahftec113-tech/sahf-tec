@@ -51,6 +51,14 @@ function MainNavigator() {
               component={Screens.AddLeadsScreen}
             />
             <Stack.Screen
+              name="MarkAttendanceScreen"
+              component={Screens.MarkAttendanceScreen}
+            />
+            <Stack.Screen
+              name="LeadReportScreen"
+              component={Screens.LeadReportScreen}
+            />
+            <Stack.Screen
               name="LeadDetailScreen"
               component={Screens.LeadDetailScreen}
             />

@@ -5263,10 +5263,10 @@ lru-cache@^5.1.1:
   dependencies:
     yallist "^3.0.2"
 
-lucide-react-native@^0.553.0:
-  version "0.553.0"
-  resolved "https://registry.yarnpkg.com/lucide-react-native/-/lucide-react-native-0.553.0.tgz#f8beaf456fa5bdd3d0e89d280e251d2c1bc4e0a2"
-  integrity sha512-8Ny42mSzJNW1obB08LtZxq0uQ9Kh0VeZvpbYPBRNUDWX/8uNva6JOapFRjS0cKpHz1Vz6cqMqkhLD9WMcx33jA==
+lucide-react-native@^0.556.0:
+  version "0.556.0"
+  resolved "https://registry.yarnpkg.com/lucide-react-native/-/lucide-react-native-0.556.0.tgz#b93d2103072d4cf0dde032999db416ddce815d89"
+  integrity sha512-+S1OBKKKQg8LH4a6PoKxHAEYwPW/LakLzC5EUE0D8vLP2rtVIIyeycVV7UHj9eZzMqPzt86ZYV4eQt/pS7gTng==
 
 make-dir@^4.0.0:
   version "4.0.0"
@@ -6134,6 +6134,11 @@ react-native-blurhash@^2.1.1:
   version "2.1.2"
   resolved "https://registry.yarnpkg.com/react-native-blurhash/-/react-native-blurhash-2.1.2.tgz#b64ddcab453fd34b1ad8f958461bad5a31c47dfc"
   integrity sha512-udueHl9kIOYnLqM+7V1v/5db2JEgAb97cmmN8aUbSQMpXOH5CCUufJzuYW+jLp65fnoYgDmbjA8RRSosBSj0JA==
+
+react-native-call-log@^2.1.2:
+  version "2.1.2"
+  resolved "https://registry.yarnpkg.com/react-native-call-log/-/react-native-call-log-2.1.2.tgz#f80d2fcb45f72118eb8048d5bfdef191fd4a3df3"
+  integrity sha512-nWHmb+QMN/AbbZFEuUGiQePssPgjQr5dibNAURDlqO4S5wuLk1XzxxsLUAVHZnB0FdJoMlajD7tUAXtaoxYwUQ==
 
 react-native-collapsible@^1.6.2:
   version "1.6.2"

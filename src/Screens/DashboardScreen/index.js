@@ -55,7 +55,16 @@ export default function DashboardScreen() {
       >
         <MultiSelectButton
           items={upperTabsArry}
-          onSelectVal={() => NavigationService.navigate('AddLeadsScreen')}
+          onSelectVal={(_, item) => {
+            if (item?.top_menus == 'Lead Reports') {
+              NavigationService.navigate('LeadReportScreen');
+            } else if (item?.top_menus == 'Leads') {
+              NavigationService.navigate('AddLeadsScreen');
+            } else if (item?.id == 'attendance') {
+              NavigationService.navigate('MarkAttendanceScreen');
+            } else () => {};
+          }}
+          // onSelectVal={() => NavigationService.navigate('AddLeadsScreen')}
         />
       </ScrollView>
 

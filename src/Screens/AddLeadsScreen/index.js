@@ -11,8 +11,12 @@ import { TextInput, Button } from 'react-native-paper';
 import { Picker } from '@react-native-picker/picker';
 import useAddLeadScreen from './useAddLeadsScreen';
 import { errorMessage } from '../../Config/NotificationMessage';
+import DatePicker from 'react-native-date-picker';
+import { formatDateToMDY } from '../../Services/GlobalFunctions';
+import { TextComponent } from '../../Components/TextComponent';
+import { hp, wp } from '../../Hooks/useResponsive';
 
-const AddLeadsScreen = () => {
+const AddLeadsScreen = ({ navigation }) => {
   const {
     userData,
     token,
@@ -52,7 +56,14 @@ const AddLeadsScreen = () => {
     statusArry,
     categoryArry,
     checkNum,
-  } = useAddLeadScreen();
+    otherText,
+    setOtherText,
+    modalState,
+    setModalState,
+    selectedDate,
+    setSelectedDate,
+    currentDate,
+  } = useAddLeadScreen(navigation);
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -88,17 +99,38 @@ const AddLeadsScreen = () => {
           <View style={styles.pickerContainer}>
             <Picker
               selectedValue={source}
-              onValueChange={itemValue => setSource(itemValue)}
+              onValueChange={(itemValue, index) => {
+                setSource(itemValue);
+                setCampaignName(souceArry[index - 1]?.source_name);
+              }}
               style={styles.picker}
             >
               <Picker.Item label="Select" value="" />
-              {souceArry?.map(res => {
+              {[
+                ...souceArry,
+                {
+                  source_name: 'Other',
+                  id: 'Other',
+                },
+              ]?.map(res => {
                 return <Picker.Item label={res?.source_name} value={res?.id} />;
               })}
             </Picker>
           </View>
         </View>
       </View>
+      {source == 'Other' && (
+        <View style={styles.row}>
+          <View style={styles.full}>
+            <TextInput
+              mode="outlined"
+              value={otherText}
+              onChangeText={setOtherText}
+              multiline
+            />
+          </View>
+        </View>
+      )}
 
       {/* Lead Details 1-3 */}
       <View style={styles.row}>
@@ -277,7 +309,33 @@ const AddLeadsScreen = () => {
             </Picker>
           </View>
         </View>
-        <View style={styles.half} />
+        {Boolean(
+          status == 1 ||
+            status == 5 ||
+            status == 3 ||
+            status == 3 ||
+            status == 10 ||
+            status == 9,
+        ) && (
+          <View style={styles.half}>
+            <Text style={styles.label}>Select Date</Text>
+            <TextComponent
+              text={formatDateToMDY(selectedDate ?? currentDate)}
+              onPress={() => setModalState(true)}
+              styles={{
+                backgroundColor: 'white',
+                width: wp('45'),
+                height: hp('7'),
+                borderRadius: 5,
+                borderWidth: 0.7,
+                borderColor: 'black',
+                paddingTop: hp('2'),
+                paddingLeft: wp('2'),
+              }}
+              family={'400'}
+            />
+          </View>
+        )}
       </View>
 
       {/* Buttons */}
@@ -286,57 +344,37 @@ const AddLeadsScreen = () => {
           mode="contained"
           onPress={() => {
             if (
-              category?.id != null &&
-              source?.id != null &&
+              category != null &&
+              source != null &&
               fullName != null &&
               mobile != null &&
-              assignTo?.id != null &&
-              status?.id != null
+              assignTo != null &&
+              status != null
             ) {
               mutateAsync({
                 addlead: 'add_lead',
-
-                allowtoEntCrmSctino: 203,
-
-                LeadIndividual_Source: 2,
-
+                allowtoEntCrmSctino: userData?.id,
+                LeadIndividual_Source: source,
                 LeadIndividual_Category: category,
-
                 LeadIndividual_CampaignName: campaignName,
-
                 LeadIndividual_LeadDetail1: leadDetail1,
-
                 LeadIndividual_LeadDetail2: leadDetail2,
-
                 LeadIndividual_LeadDetail3: leadDetail3,
-
                 LeadIndividual_LeadDetail4: leadDetail4,
-
                 LeadIndividual_LeadsFullName: fullName,
-
                 LeadIndividual_Email: email,
-
                 LeadIndividual_Mobile: mobile,
-
                 LeadIndividual_Website: website,
-
-                LeadIndividual_JobType: status?.id,
-
+                LeadIndividual_JobType: status,
                 LeadIndividual_AssignUserID: assignTo,
-
-                LeadIndividual_showIndidivualSrcOther: assignTo?.id,
-
+                LeadIndividual_showIndidivualSrcOther: otherText,
                 LeadIndividual_LeadIndividual_Rating: rating,
-
-                LeadIndividual_LeadIndividual_selectStatus: 12,
-
-                LeadIndividual_LeadIndividual_selectStatus_date: status?.id,
-
+                LeadIndividual_LeadIndividual_selectStatus: status,
+                LeadIndividual_LeadIndividual_selectStatus_date: selectedDate,
                 rqst_ke_fntn_vl: `usr_lg_attempt`,
                 userLoginToken: token,
                 userLoginIDC: userData?.id,
                 crm_software_clients_id: userData?.crm_software_clients_id,
-                goingToUpdateLeadsCategoryId: 'goingToUpdateLeadsCategoryId',
               });
             } else errorMessage('Please fill the required fields');
           }}
@@ -348,6 +386,28 @@ const AddLeadsScreen = () => {
           Close
         </Button>
       </View>
+      {modalState && (
+        <DatePicker
+          // mode={'datetime'}
+          mode={'date'}
+          open={true}
+          date={selectedDate ?? currentDate}
+          is24hourSource="locale"
+          locale="en"
+          onCancel={() => setModalState(false)}
+          modal
+          onConfirm={e => {
+            console.log(
+              'lksdbvlksbdlkvbsdlkbvlsdblvkbsdlvbsdkvsd',
+              e,
+              new Date(e.getTime() + 24 * 60 * 60 * 1000),
+              e.toDateString(),
+            );
+            setSelectedDate(e);
+            setModalState(false);
+          }}
+        />
+      )}
     </ScrollView>
   );
 };

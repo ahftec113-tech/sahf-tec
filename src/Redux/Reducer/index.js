@@ -14,6 +14,7 @@ import FavoriteReducer from './FavoriteReducer';
 import ImagePrevReducer from './ImagePrevReducer';
 import draftReducer from './DraftAdsReducer';
 import porjectCopy from './PorjectCopyReducer';
+import MakeAttandanceReducer from './MakeAttandanceReducer';
 
 const onBoardPersistConfig = {
   key: 'onboarding',
@@ -42,6 +43,11 @@ const ProjectCopiesConfig = {
   storage: AsyncStorage,
   whitelist: ['projectCopies'],
 };
+const MakeAttConfig = {
+  key: 'attendanceTime',
+  storage: AsyncStorage,
+  whitelist: ['attendanceTime'],
+};
 
 const rootReducer = combineReducers({
   // onboarding: persistReducer(onBoardPersistConfig, onboardingReducer),
@@ -49,6 +55,7 @@ const rootReducer = combineReducers({
   favProjects: persistReducer(FavProjecctConfig, FavoriteReducer),
   DraftAds: persistReducer(DraftAdsConfig, draftReducer),
   projectCopies: persistReducer(ProjectCopiesConfig, porjectCopy),
+  attendanceTime: persistReducer(MakeAttConfig, MakeAttandanceReducer),
   isloading: loadingReducer,
   modalState: ImagePrevReducer,
 });

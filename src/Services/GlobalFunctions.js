@@ -154,16 +154,16 @@ const getCurrentLocation = () => {
   return new Promise((resolve, reject) => {
     Geolocation.getCurrentPosition(
       async position => {
-        const locationName = await getLocationName(
-          position.coords.latitude,
-          position.coords.longitude,
-        );
+        // const locationName = await getLocationName(
+        //   position.coords.latitude,
+        //   position.coords.longitude,
+        // );
         resolve({
           coords: {
             lat: position.coords.latitude,
             long: position.coords.longitude,
           },
-          description: locationName || 'Unknown location',
+          description: 'Unknown location',
           ok: true,
         });
       },

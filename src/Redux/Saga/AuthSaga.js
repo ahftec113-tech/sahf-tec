@@ -19,6 +19,7 @@ import {
 } from '../../Services/AuthServices';
 import { errorMessage, successMessage } from '../../Config/NotificationMessage';
 import NavigationService from '../../Services/NavigationService';
+import { getProperLocation } from '../../Services/GlobalFunctions';
 
 // const loginObject = {
 //   Google: () => googleLogin(),
@@ -43,21 +44,24 @@ export const loginThunk =
       // const jwtToken = idTokenResult.token;
 
       // if (jwtToken) {
+      const location = await getProperLocation();
+
       console.log('klweflksdbvkldsblkvsd', {
         LGEmail: email,
         LGPassword: password,
-        user_lng_val: 1231231231,
-        user_lat_val: 1231231231,
+        user_lng_val: location?.location?.coords?.long,
+        user_lat_val: location?.location?.coords?.lat,
         goingToLogin: 'LogIn',
         user_device_desktop_val: 1,
         user_device_mobile_val: 1,
       });
+
       const { data, ok } = await loginService({
         // token: jwtToken,
         LGEmail: email,
         LGPassword: password,
-        user_lng_val: 1231231231,
-        user_lat_val: 1231231231,
+        user_lng_val: location?.location?.coords?.long,
+        user_lat_val: location?.location?.coords?.lat,
         goingToLogin: 'LogIn',
         user_device_desktop_val: 1,
         user_device_mobile_val: 1,

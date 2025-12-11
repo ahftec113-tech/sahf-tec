@@ -31,5 +31,7 @@ export { default as LeadListScreen } from './LeadListScreen';
 export { default as LeadFilterScreen } from './LeadFilterScreen';
 export { default as LeadDetailScreen } from './LeadDetailScreen';
 export { default as AddLeadsScreen } from './AddLeadsScreen';
+export { default as LeadReportScreen } from './LeadReportScreen';
+export { default as MarkAttendanceScreen } from './MarkAttendanceScreen';
 
 export { default as ListViewScreen } from '../Components/ListViewComp';
