@@ -47,12 +47,20 @@ function MainNavigator() {
               component={Screens.DashboardScreen}
             />
             <Stack.Screen
+              name="AddComScreen"
+              component={Screens.AddComScreen}
+            />
+            <Stack.Screen
               name="AddLeadsScreen"
               component={Screens.AddLeadsScreen}
             />
             <Stack.Screen
               name="MarkAttendanceScreen"
               component={Screens.MarkAttendanceScreen}
+            />
+            <Stack.Screen
+              name="WhatappMsgScreen"
+              component={Screens.WhatappMsgScreen}
             />
             <Stack.Screen
               name="LeadReportScreen"
@@ -65,6 +73,11 @@ function MainNavigator() {
             <Stack.Screen
               name="LeadFilterScreen"
               component={Screens.LeadFilterScreen}
+            />
+
+            <Stack.Screen
+              name="CallSyncScreen"
+              component={Screens.CallSyncScreen}
             />
             <Stack.Screen
               name="LeadListScreen"

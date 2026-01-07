@@ -3,7 +3,7 @@ import { View, Image, ImageBackground } from 'react-native';
 import { TextComponent } from '../../Components/TextComponent';
 import { styles } from './styles';
 import ThemeButton from '../../Components/ThemeButton';
-import { afhLogo } from '../../Assets';
+import { afhLogo, sahfLogo } from '../../Assets';
 import { InputComponent } from '../../Components/InputComponent';
 import useLogin from './useLoginScreen';
 import KeyBoardWrapper from '../../Components/KeyBoardWrapper';
@@ -39,7 +39,7 @@ const LoginScreen = ({ navigation }) => {
         showsVerticalScrollIndicator={false}
       >
         <Image
-          source={afhLogo}
+          source={sahfLogo}
           resizeMode="contain"
           style={{ width: wp('35'), height: hp('10'), alignSelf: 'center' }}
         />
@@ -120,13 +120,13 @@ const LoginScreen = ({ navigation }) => {
         </View> */}
 
         {/* <SocialBottomComp onSocialPress={socialLoginFun} /> */}
-        <View style={styles.dontHave}>
+        {/* <View style={styles.dontHave}>
           <TextComponent
             text={'----------- Powered By AHF Technologies -----------'}
             styles={styles.dontHaveText}
             isThemeColor
           />
-        </View>
+        </View> */}
         {/* <View style={styles.dontHave}>
           <TextComponent
             text={'Don’t have an account?'}

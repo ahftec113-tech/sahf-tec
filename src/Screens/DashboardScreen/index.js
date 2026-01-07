@@ -18,6 +18,12 @@ import { hp, wp } from '../../Hooks/useResponsive';
 import { sumTotalLeads } from '../../Services/GlobalFunctions';
 import { types } from '../../Redux/types';
 import NavigationService from '../../Services/NavigationService';
+import {
+  brokerLeadsUrl,
+  coporateLeadsUrl,
+  leadsUrl,
+  secondaryLeadsUrl,
+} from '../../Utils/Urls';
 
 const { width } = Dimensions.get('window');
 
@@ -58,11 +64,73 @@ export default function DashboardScreen() {
           onSelectVal={(_, item) => {
             if (item?.top_menus == 'Lead Reports') {
               NavigationService.navigate('LeadReportScreen');
+            } else if (item?.top_menus == 'Secondary Leads') {
+              NavigationService.navigate('LeadListScreen', {
+                selectedLeadsCategory: selected?.value,
+                leadType: {
+                  leadfiltersecondary: 'leadfiltersecondary',
+                },
+                leadListType: {
+                  CrmLead: 'CrmLead',
+                },
+                leadDetailType: {
+                  goingToLeadsDetailSecondary: 'goingToLeadsDetailSecondary',
+                },
+                headerTitle: item?.top_menus,
+                url: secondaryLeadsUrl,
+              });
             } else if (item?.top_menus == 'Leads') {
-              NavigationService.navigate('AddLeadsScreen');
+              NavigationService.navigate('LeadListScreen', {
+                selectedLeadsCategory: selected?.value,
+                leadType: {
+                  leadfilter: 'leadfilter',
+                },
+                leadListType: {
+                  CrmLead: 'CrmLead',
+                },
+                leadDetailType: {
+                  goingTodetailLeadkey: 'goingTodetailLeadkey',
+                },
+                headerTitle: item?.top_menus,
+                url: leadsUrl,
+              });
+            } else if (item?.top_menus == 'Broker') {
+              NavigationService.navigate('LeadListScreen', {
+                selectedLeadsCategory: selected?.value,
+                leadType: {
+                  leadfilterBroker: 'leadfilterBroker',
+                },
+                leadListType: {
+                  CrmLead: 'CrmLead',
+                },
+                leadDetailType: {
+                  goingToLeadsDetailBroker: 'goingToLeadsDetailBroker',
+                },
+                headerTitle: item?.top_menus,
+                url: brokerLeadsUrl,
+              });
+            } else if (item?.top_menus == 'Corporate') {
+              NavigationService.navigate('LeadListScreen', {
+                selectedLeadsCategory: selected?.value,
+                leadType: {
+                  leadfilterCorporate: 'leadfilterCorporate',
+                },
+                leadListType: {
+                  CrmLead: 'CrmLead',
+                },
+                leadDetailType: {
+                  goingToLeadsDetailCorporate: 'goingToLeadsDetailCorporate',
+                },
+                headerTitle: item?.top_menus,
+                url: coporateLeadsUrl,
+              });
             } else if (item?.id == 'attendance') {
               NavigationService.navigate('MarkAttendanceScreen');
-            } else () => {};
+            } else if (item?.id == 'callSync') {
+              // NavigationService.navigate('LeadListScreen');
+              // NavigationService.navigate('LeadFilterScreen');
+              NavigationService.navigate('CallSyncScreen');
+            } else NavigationService.navigate('CallSyncScreen');
           }}
           // onSelectVal={() => NavigationService.navigate('AddLeadsScreen')}
         />
@@ -101,7 +169,7 @@ export default function DashboardScreen() {
             });
           }}
         >
-          Add Targets
+          Logout
         </Button>
       </View>
 

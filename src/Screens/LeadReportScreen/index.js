@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import React, { memo, useCallback, useState } from 'react';
 import { HeaderComponent } from '../../Components/HeaderComp';
+import AddRemarksModalComp from '../../Components/AddRemarksModalComp';
 import { Picker } from '@react-native-picker/picker';
 import { ChevronDown } from 'lucide-react-native'; // Optional: for beautiful icons
 import { hp, wp } from '../../Hooks/useResponsive';
@@ -42,6 +43,11 @@ const LeadReportScreen = () => {
     mutate,
     lead_user_data,
     setApiPostData,
+    setLead_user_data,
+    add_remarks_user_data,
+    modalVisible,
+    setModalVisible,
+    addReason,
   } = useLeadReportScreen();
 
   const renderItem = useCallback(({ item, index }) => {
@@ -81,6 +87,7 @@ const LeadReportScreen = () => {
             <Picker
               selectedValue={leadsCat}
               onValueChange={itemValue => {
+                setLead_user_data([]);
                 setApiPostData({
                   leadsCat: itemValue,
                   reportType: null,
@@ -246,14 +253,31 @@ const LeadReportScreen = () => {
           )}
         </>
       )}
-      <ThemeButton
-        title={'View'}
+      <View
         style={{
-          width: wp('45'),
-          marginLeft: wp('2'),
+          flexDirection: 'row',
+          alignItems: 'center',
         }}
-        onPress={() => mutate()}
-      />
+      >
+        <ThemeButton
+          title={'View'}
+          style={{
+            width: wp('45'),
+            marginLeft: wp('2'),
+          }}
+          onPress={() => mutate()}
+        />
+        {add_remarks_user_data?.showModalButton == true && (
+          <ThemeButton
+            title={'Add Remakrs'}
+            style={{
+              width: wp('45'),
+              marginLeft: wp('2'),
+            }}
+            onPress={() => setModalVisible(true)}
+          />
+        )}
+      </View>
       {lead_user_data && (
         <FlatList
           data={lead_user_data}
@@ -284,6 +308,19 @@ const LeadReportScreen = () => {
             // setSelectedDate(e);
             // setModalState(false);
           }}
+        />
+      )}
+      {modalVisible && (
+        <AddRemarksModalComp
+          visible={modalVisible}
+          onClose={() => setModalVisible(false)}
+          onSave={async type => {
+            await addReason.mutateAsync({
+              reason: type,
+            });
+            mutate();
+          }}
+          data={add_remarks_user_data}
         />
       )}
 

@@ -1049,6 +1049,17 @@ function getFormattedTime(dateStr) {
   const minutes = String(date.getMinutes()).padStart(2, '0');
   const seconds = String(date.getSeconds()).padStart(2, '0');
 
+  return `${hours}:${minutes}`;
+  // output: "23:00"
+}
+function getFormattedTimeWithSec(dateStr) {
+  const date = new Date(dateStr);
+  if (isNaN(date)) return null;
+
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  const seconds = String(date.getSeconds()).padStart(2, '0');
+
   return `${hours}:${minutes}:${seconds}`;
   // output: "23:00:00"
 }
@@ -1311,4 +1322,5 @@ export {
   parseLogString,
   getUrlType,
   sumTotalLeads,
+  getFormattedTimeWithSec,
 };

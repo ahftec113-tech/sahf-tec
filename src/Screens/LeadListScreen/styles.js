@@ -19,7 +19,7 @@ export default StyleSheet.create({
     backgroundColor: '#fff',
     borderBottomWidth: 1,
     borderColor: '#e0e0e0',
-    width: wp('70'),
+    width: wp('100'),
   },
   headerBtn: {
     backgroundColor: '#2196F3',
@@ -85,7 +85,7 @@ export default StyleSheet.create({
 
   /* ---------- Pagination Footer ---------- */
   footer: {
-    flexDirection: 'row',
+    // flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
     paddingVertical: 8,

@@ -1,12 +1,13 @@
 //  Images
 
 export { default as splash } from './Images/splash.png';
-export { default as splash2 } from './Images/AHFSplash.png';
+export { default as splash2 } from './Images/sahfSplash.jpg';
 export { default as splashOne } from './Images/splashOne.png';
 export { default as splashTwo } from './Images/splashTwo.png';
 export { default as splashThree } from './Images/splashThree.png';
 export { default as stepBg } from './Images/stepBg.png';
 export { default as noData } from './Images/noData.png';
+export { default as sahfLogo } from './Images/sahfLogo.png';
 
 export { default as signupBg } from './Images/signupBg.png';
 export { default as tacLogo } from './Images/tacLogo.png';

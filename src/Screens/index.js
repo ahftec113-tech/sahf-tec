@@ -33,5 +33,8 @@ export { default as LeadDetailScreen } from './LeadDetailScreen';
 export { default as AddLeadsScreen } from './AddLeadsScreen';
 export { default as LeadReportScreen } from './LeadReportScreen';
 export { default as MarkAttendanceScreen } from './MarkAttendanceScreen';
+export { default as WhatappMsgScreen } from './WhatappMsgScreen';
+export { default as CallSyncScreen } from './CallSyncScreen';
+export { default as AddComScreen } from './AddComScreen';
 
 export { default as ListViewScreen } from '../Components/ListViewComp';

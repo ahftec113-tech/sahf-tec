@@ -40,6 +40,11 @@ export const loginUrl = '/login';
 export const updateProfileUrl = 'user_dashboard/updateProfilez';
 export const quotaDataUrl = '/user_dashboard/packageDetail';
 
+export const leadsUrl = 'mb_user_lead_pl.htm';
+export const secondaryLeadsUrl = 'mb_user_secondary_lead_pl.htm';
+export const brokerLeadsUrl = 'mb_user_broker_lead_pl.htm';
+export const coporateLeadsUrl = 'mb_user_corporate_lead_pl.htm';
+
 export const homeDataUrl = '/home';
 export const getCountryDataUrl = '/indexProcess';
 export const searchByLocationUrl = '/search-by-location/';

@@ -1,378 +1,1058 @@
-import React, { memo } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
-  ScrollView,
   View,
   Text,
-  TouchableOpacity,
   StyleSheet,
+  ScrollView,
+  TouchableOpacity,
   Linking,
   SafeAreaView,
   StatusBar,
+  FlatList,
+  TextInput,
+  Alert,
+  Modal,
+  Pressable,
+  Platform,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import LinearGradient from 'react-native-linear-gradient';
+import DateTimePicker from '@react-native-community/datetimepicker'; // You need to install this: npm install @react-native-community/datetimepicker
+import {
+  Phone,
+  ChevronDown,
+  ChevronUp,
+  Edit2,
+  Check,
+  X,
+} from 'lucide-react-native';
+import { styles } from './styles';
+import { useMutation } from '@tanstack/react-query';
+import useReduxStore from '../../Hooks/UseReduxStore';
+import { errorMessage, successMessage } from '../../Config/NotificationMessage';
+import API from '../../Utils/helperFunc';
+import { hp, wp } from '../../Hooks/useResponsive';
+import { Picker } from '@react-native-picker/picker';
+import { formatDateToMDY } from '../../Services/GlobalFunctions';
+import { HeaderComponent } from '../../Components/HeaderComp';
 
 const LeadDetailScreen = ({ navigation, route }) => {
-  const lead = {
-    name: 'Shahzaib Khan',
-    phone: '+923178325986',
-    email: 'shahzaibkhan00311@gmail.com',
-    status: 'Meeting Confirmed',
-    source: 'FaceBook',
-    createdDate: '11/15/2025',
-    latestStatus: 'Meeting Confirmed',
-    latestCommunication:
-      'said not looking was looking for someone (Modified By: M Saquib Ur Rehman)',
-    admin: {
-      name: 'Sammar Abbas',
-      email: 'sammar2@sahfgroup.com',
-      phone: '03268066194',
+  const [callingHistoryExpanded, setCallingHistoryExpanded] = useState(false);
+  const [communicationExpanded, setCommunicationExpanded] = useState(false);
+  const [notesExpanded, setNotesExpanded] = useState(false);
+
+  // Editable Lead Contact Fields
+  const [isEditing, setIsEditing] = useState(null);
+  const [leadEmail, setLeadEmail] = useState('');
+  const [leadCell, setLeadCell] = useState('03332132024');
+  const [tempEmail, setTempEmail] = useState();
+  const [tempCell, setTempCell] = useState();
+  const [tempName, setTempName] = useState();
+  const [detailData, setDetailsData] = useState(null);
+  const [tempSecondaryCell, setTempSecondaryCell] = useState(''); // New Secondary Cell
+
+  // Modal states
+  const [noteModalVisible, setNoteModalVisible] = useState(false);
+  const [followUpModalVisible, setFollowUpModalVisible] = useState(false);
+  const [statusModalVisible, setStatusModalVisible] = useState(false); // New: Status picker modal
+  const [noteText, setNoteText] = useState('');
+  const [followUpDate, setFollowUpDate] = useState(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
+
+  // Status editing
+  const [selectedStatus, setSelectedStatus] = useState('');
+  const [currentStatus, setCurrentStatus] = useState(''); // To display current status
+
+  // Sample status options - replace with your actual statuses from API if available
+  const statusOptions = [
+    { value: 10, label: 'Need Recommendations' },
+    { value: 6, label: 'Lost Lead' },
+    { value: 4, label: 'Junk Lead' },
+  ];
+
+  const { getState } = useReduxStore();
+  const { userData, token } = getState('Auth');
+
+  console.log('sdfghjklkjhgfdfghjkkjhgfdfghjklkjhgfdfghjklkjhg', {
+    rqst_ke_fntn_vl: `usr_lg_attempt`,
+    userLoginToken: token,
+    userLoginIDC: userData?.id,
+    crm_software_clients_id: userData?.crm_software_clients_id,
+    userRoleIndicate: userData?.crm_user_role,
+    allowtoEntCrmSctino: userData?.id,
+    selectedLeadsCategory: userData?.leads_category_id,
+    goingToLeadsDetail: route?.params?.id,
+    ...route?.params?.leadDetailType,
+  });
+
+  const { mutate } = useMutation({
+    mutationFn: () => {
+      return API.post(route?.params?.url, {
+        rqst_ke_fntn_vl: `usr_lg_attempt`,
+        userLoginToken: token,
+        userLoginIDC: userData?.id,
+        crm_software_clients_id: userData?.crm_software_clients_id,
+        userRoleIndicate: userData?.crm_user_role,
+        allowtoEntCrmSctino: userData?.id,
+        selectedLeadsCategory: userData?.leads_category_id,
+        goingToLeadsDetail: route?.params?.id,
+        ...route?.params?.leadDetailType,
+      });
     },
-    owner: {
-      name: 'Qamar Farid',
-      email: 'qamar.farid@sahfgroup.com',
-      phone: '',
+    onSuccess: ({ ok, data }) => {
+      console.log('wertyuioiuytrertyuioiuytrtyuiutryuytryuiyrtyuyr', data);
+      if (ok) {
+        setDetailsData(data);
+        // Set initial status when data loads
+        const initialStatus =
+          data?.modal?.lead_info?.fields?.lead_latest_status?.value || 'New';
+        setCurrentStatus(initialStatus);
+        setSelectedStatus(initialStatus);
+      }
     },
-    notes:
-      'you_are_interested_in_2-apartments | when_you_can_come_for_the_meeting_tomorrow | how_much_down_payment_you_can_pay_40_lac_plus | how_much_monthly_installment_you_can_pay_600,000+_plus_you_are_looking_for_future_living',
-    communications: [
-      {
-        user: 'M Saquib Ur Rehman',
-        status: 'Meeting Confirmed',
-        details:
-          'said not looking was looking for someone (Modified By: M Saquib Ur Rehman)',
-        date: '11/16/2025',
-        selectedDate: 'December 5, 2025 01:00:00 PM',
-      },
-      {
-        user: 'Qamar Farid',
-        status: 'Meeting Confirmed',
-        details:
-          'He is likely to visit Grand by tomorrow, he lives in lyari. UserSelectedDate: Nov 16, 2025 01:00:00 PM',
-        date: '11/15/2025',
-        selectedDate: '',
-      },
-    ],
-  };
+    onError: e => errorMessage(e),
+  });
 
-  const statusColors = {
-    'Meeting Confirmed': '#10B981',
-    'Meeting Done': '#3B82F6',
-    'Sale Done': '#8B5CF6',
-    'Pre-Qualified': '#F59E0B',
-  };
+  useEffect(() => {
+    mutate();
+  }, []);
 
-  const makeCall = phone => {
-    if (phone) Linking.openURL(`tel:${phone}`);
-  };
+  const addNotes = useMutation({
+    mutationFn: () =>
+      API.post(route?.params?.url, {
+        rqst_ke_fntn_vl: `usr_lg_attempt`,
+        userLoginToken: token,
+        userLoginIDC: userData?.id,
+        crm_software_clients_id: userData?.crm_software_clients_id,
+        userRoleIndicate: userData?.crm_user_role,
+        goingToAddNewLeadNoteDes: 'goingToAddNewLeadNoteDes',
 
-  const sendEmail = email => {
-    if (email) Linking.openURL(`mailto:${email}`);
-  };
+        allowtoEntCrmSctino: userData?.id,
+        selectedLeadsCategory: userData?.leads_category_id,
+        addNewLedNote_leadID: route?.params?.id,
+        addNewLedChaNote: noteText,
+      }),
+    onSuccess: ({ ok, data }) => {
+      console.log(
+        'wertyuioiuytrertyuioisdfsdfdsuytrtyuiutryuytryuiyrtyuyr',
+        data,
+      );
+      if (ok) {
+        successMessage('Note added');
+        mutate();
+      }
+    },
+    onError: e => errorMessage(e),
+  });
 
-  const sendWhatsApp = () => {
-    Linking.openURL(
-      `whatsapp://send?phone=${lead.phone.replace('+', '')}&text=Hello ${
-        lead.name
-      }`,
+  const changeLeadStatus = useMutation({
+    mutationFn: data =>
+      API.post(route?.params?.url, {
+        rqst_ke_fntn_vl: `usr_lg_attempt`,
+        userLoginToken: token,
+        userLoginIDC: userData?.id,
+        crm_software_clients_id: userData?.crm_software_clients_id,
+        userRoleIndicate: userData?.crm_user_role,
+        allowtoEntCrmSctino: userData?.id,
+        selectedLeadsCategory: userData?.leads_category_id,
+        goingToAddNewLeadChatDetail: 'goingToAddNewLeadChatDetail',
+        addNewLedChatAddNewComm_leadAssigneeID: userData?.id,
+        addNewLedChatAddNewComm_leadUserID: detailData?.assigned_user?.id,
+        addNewLedChatAddNewComm_leadID: route?.params?.id,
+        addNewLedChatAddNewComm_LeadStatus: selectedStatus,
+        ...data,
+      }),
+    onSuccess: ({ ok, data }) => {
+      console.log(
+        'wertyuioiuytrertyuioisdfsdfdsuytrtyuiutryuytryuiyrtyuyr',
+        data,
+      );
+      if (ok) {
+        successMessage('Status Changed');
+        mutate();
+      }
+    },
+    onError: e => errorMessage(e),
+  });
+
+  const addFollowUp = useMutation({
+    mutationFn: () =>
+      API.post(route?.params?.url, {
+        rqst_ke_fntn_vl: `usr_lg_attempt`,
+        userLoginToken: token,
+        userLoginIDC: userData?.id,
+        crm_software_clients_id: userData?.crm_software_clients_id,
+        userRoleIndicate: userData?.crm_user_role,
+        addfollowup: 'addfollowup',
+        allowtoEntCrmSctino: userData?.id,
+        selectedLeadsCategory: userData?.leads_category_id,
+        addNewLedNote_leadID: route?.params?.id,
+        attrFollowLeadIDToFollow: route?.params?.id,
+        attrFollowLeadIDToFollowCalenDar: formatDateToMDY(followUpDate),
+        attrFollowLeadIDToFollowType: detailData?.modal?.actions?.follow_up
+          ?.current_date
+          ? 'unfollow'
+          : 'follow',
+      }),
+    onSuccess: ({ ok, data }) => {
+      if (ok) {
+        successMessage('FollowUp added');
+        mutate();
+      }
+    },
+    onError: e => errorMessage(e),
+  });
+  const contactEdit = useMutation({
+    mutationFn: data => {
+      const payload = {
+        rqst_ke_fntn_vl: 'usr_lg_attempt',
+        userLoginToken: token,
+        userLoginIDC: userData?.id,
+        crm_software_clients_id: userData?.crm_software_clients_id,
+        userRoleIndicate: userData?.crm_user_role,
+        allowtoEntCrmSctino: userData?.id,
+        selectedLeadsCategory: userData?.leads_category_id,
+        addNewLedNote_leadID: route?.params?.id,
+        attrFollowLeadIDToFollow: route?.params?.id,
+        goingToUpdateSpecificLeadField: 'goingToUpdateSpecificLeadField',
+        goingToUpdateSpecificLeadField_leadID: route?.params?.id,
+        goingToUpdateSpecificLeadField_LeadPhone: tempCell,
+        goingToUpdateSpecificLeadField_LeadMorePhone: tempSecondaryCell,
+        // goingToAddNewLeadChatDetail: 'goingToAddNewLeadChatDetail',
+        goingToUpdateSpecificLeadField_Leademail: tempEmail,
+        goingToUpdateSpecificLeadField_LeadName: tempName,
+        allowtoEntCrmSctinoName: userData?.crm_user_name,
+
+        ...data,
+      };
+
+      // 🔍 LOG REQUEST BODY
+      console.log('CONTACT EDIT API BODY 👉', payload);
+
+      return API.post(route?.params?.url, payload);
+    },
+
+    onSuccess: ({ ok, data }) => {
+      console.log('API RESPONSE 👉', data);
+      if (ok) {
+        successMessage('Data Updated');
+        mutate();
+      }
+    },
+
+    onError: e => {
+      console.log('API ERROR 👉', e);
+      errorMessage(e);
+    },
+  });
+
+  // Component for truncated text with Read More/Less
+  const TruncatedText = ({ text, maxLength = 100 }) => {
+    const [expanded, setExpanded] = useState(false);
+
+    if (!text || text.length <= maxLength) {
+      return <Text style={styles.commTextSmall}>{text || '-'}</Text>;
+    }
+
+    return (
+      <View>
+        <Text style={styles.commTextSmall}>
+          {expanded ? text : `${text.substring(0, maxLength)}...`}
+        </Text>
+        <TouchableOpacity onPress={() => setExpanded(!expanded)}>
+          <Text style={styles.readMoreText}>
+            {expanded ? 'Read Less' : 'Read More'}
+          </Text>
+        </TouchableOpacity>
+      </View>
     );
   };
 
+  const handlePhoneCall = phone => {
+    const cleaned = phone.replace(/\s/g, '');
+    Linking.openURL(`tel:${cleaned}`);
+  };
+
+  const handleWhatsApp = phone => {
+    const cleaned = phone.replace(/\s/g, '');
+    Linking.openURL(`whatsapp://send?phone=${phone}`);
+  };
+
+  const saveChanges = () => {
+    const isEdit = isEditing;
+    if (tempCell.trim().length < 1 && isEdit == 'phone') {
+      Alert.alert(
+        'Invalid Phone',
+        'Please enter a valid primary phone number.',
+      );
+      return;
+    }
+    if (
+      tempSecondaryCell.trim() &&
+      tempSecondaryCell.trim().length < 10 &&
+      isEdit == 'phone'
+    ) {
+      Alert.alert(
+        'Invalid Secondary Phone',
+        'Secondary number must be valid if provided.',
+      );
+      return;
+    }
+    if (tempEmail.trim() && !tempEmail.includes('@') && isEdit == 'email') {
+      Alert.alert('Invalid Email', 'Please enter a valid email address.');
+      return;
+    }
+
+    // setLeadEmail(tempEmail.trim());
+    // setLeadCell(tempCell.trim());
+    setIsEditing(null);
+    contactEdit.mutate({
+      goingToUpdateSpecificLeadField_Updatetype: isEdit,
+    });
+  };
+  const cancelEditing = () => {
+    // setTempEmail(leadEmail);
+    // setTempCell(leadCell);
+    setIsEditing(null);
+  };
+
+  const saveNote = async () => {
+    if (!noteText.trim()) {
+      Alert.alert('Empty Note', 'Please enter a note before saving.');
+      return;
+    }
+    setNoteModalVisible(false);
+    await addNotes.mutateAsync();
+    setNoteText('');
+  };
+
+  const saveFollowUp = () => {
+    const formatted = followUpDate.toLocaleDateString();
+    // Alert.alert('Follow Up Set', `Follow-up scheduled for ${formatted}`);
+    setFollowUpModalVisible(false);
+    addFollowUp.mutate();
+  };
+
+  const onDateChange = (event, selectedDate) => {
+    const currentDate = selectedDate || followUpDate;
+    setShowDatePicker(Platform.OS === 'ios');
+    setFollowUpDate(currentDate);
+  };
+
+  // Save status
+  const saveStatus = () => {
+    // setCurrentStatus(selectedStatus);
+    setStatusModalVisible(false);
+    changeLeadStatus.mutate();
+
+    // TODO: Call API to update status
+  };
+
+  const renderCommunicationItem = ({ item }) => (
+    <View style={styles.section}>
+      <View style={styles.infoRow}>
+        <Text style={styles.label}>User Name</Text>
+        <Text style={styles.value}>{item?.leads_full_name || '-'}</Text>
+      </View>
+      <View style={styles.infoRow}>
+        <Text style={styles.label}>Lead Status</Text>
+        <Text style={styles.value}>{item?.lead_status_name || '-'}</Text>
+      </View>
+      <View style={styles.infoRow}>
+        <Text style={styles.label}>Communication Details</Text>
+        <View style={{ flex: 1, alignItems: 'flex-end' }}>
+          <TruncatedText text={item?.detail} />
+        </View>
+      </View>
+      <View style={styles.infoRow}>
+        <Text style={styles.label}>Chat Date</Text>
+        <Text style={styles.value}>{item?.leadsCreatedDate || '-'}</Text>
+      </View>
+      <View style={styles.infoRow}>
+        <Text style={styles.label}>User Selected Date</Text>
+        <Text style={styles.value}>{item?.userSelectedDate || '-'}</Text>
+      </View>
+    </View>
+  );
+  const renderNotesItem = ({ item }) => (
+    <View style={styles.section}>
+      <View style={styles.infoRow}>
+        <Text style={styles.label}>User Name</Text>
+        <Text style={styles.value}>{item?.notifierName || '-'}</Text>
+      </View>
+      <View style={styles.infoRow}>
+        <Text style={styles.label}>Note</Text>
+        <Text style={styles.value}>{item?.description || '-'}</Text>
+      </View>
+      <View style={styles.infoRow}>
+        <Text style={styles.label}>Role</Text>
+        <View style={{ flex: 1, alignItems: 'flex-end' }}>
+          <TruncatedText text={item?.user_role} />
+        </View>
+      </View>
+      <View style={styles.infoRow}>
+        <Text style={styles.label}>Note Date</Text>
+        <Text style={styles.value}>{item?.noteDate || '-'}</Text>
+      </View>
+    </View>
+  );
+
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#1E40AF" />
-
-      {/* Header */}
-      <LinearGradient colors={['#1E40AF', '#1D4ED8']} style={styles.header}>
-        <Text style={styles.headerTitle}>{lead.name}</Text>
-        <View style={styles.statusBadge}>
-          <Icon name="check-circle" size={18} color="#fff" />
-          <Text style={styles.statusText}>{lead.status}</Text>
-        </View>
-      </LinearGradient>
-
-      <ScrollView style={styles.scrollView}>
-        {/* Action Buttons */}
-        <View style={styles.actionButtons}>
+      <StatusBar barStyle="dark-content" backgroundColor="#f8f9fa" />
+      <HeaderComponent isBack />
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        {/* ==================== ACTION BUTTONS ==================== */}
+        <View style={styles.actionButtonsContainer}>
           <TouchableOpacity
-            style={styles.actionBtnPrimary}
-            onPress={sendWhatsApp}
+            style={[styles.actionButton, styles.whatsappButton]}
+            onPress={() =>
+              handleWhatsApp(
+                detailData?.modal?.lead_info?.fields?.lead_cell?.value,
+              )
+            }
           >
-            <Icon name="whatsapp" size={22} color="#fff" />
-            <Text style={styles.actionBtnText}>Send Detail (WhatsApp)</Text>
+            <Text style={styles.actionButtonText}>Send Detail (WhatsApp)</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.actionBtn}>
-            <Text style={styles.actionBtnTextSecondary}>Add Note</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.actionBtn}>
-            <Text style={styles.actionBtnTextSecondary}>Follow Up</Text>
-          </TouchableOpacity>
-        </View>
 
-        {/* Quick Contact Cards */}
-        <View style={styles.infoRow}>
           <TouchableOpacity
-            style={styles.infoCard}
-            onPress={() => makeCall(lead.phone)}
+            style={[styles.actionButton, styles.secondaryButton]}
+            onPress={() => setNoteModalVisible(true)}
           >
-            <Icon name="phone" size={28} color="#10B981" />
-            <Text style={styles.infoText}>{lead.phone}</Text>
+            <Text style={styles.actionButtonText}>Add Note</Text>
           </TouchableOpacity>
+
           <TouchableOpacity
-            style={styles.infoCard}
-            onPress={() => sendEmail(lead.email)}
+            style={[styles.actionButton, styles.secondaryButton]}
+            onPress={() => {
+              if (detailData?.modal?.actions?.follow_up?.current_date) {
+                addFollowUp.mutate();
+              } else setFollowUpModalVisible(true);
+            }}
           >
-            <Icon name="email" size={28} color="#3B82F6" />
-            <Text style={styles.infoText} numberOfLines={1}>
-              {lead.email}
+            <Text style={styles.actionButtonText}>
+              {detailData?.modal?.actions?.follow_up?.current_date
+                ? 'UnFollow'
+                : 'Follow Up'}
             </Text>
+            {detailData?.modal?.actions?.follow_up?.current_date && (
+              <Text style={styles.actionButtonText}>
+                {formatDateToMDY(
+                  detailData?.modal?.actions?.follow_up?.current_date,
+                )}
+              </Text>
+            )}
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.actionButton, styles.secondaryButton]}
+            onPress={() =>
+              navigation.navigate('AddComScreen', {
+                leadStatusOp: detailData?.communication?.lead_status?.options,
+                propertyType: detailData?.communication?.property_type?.options,
+                projectName: detailData?.project_list,
+                propertyTypeDetail: detailData?.property_type,
+                stageStatusList: detailData?.stage_status_list,
+                areaList: detailData?.area_list,
+                city: detailData?.communication?.recommendation?.city?.options,
+                area: detailData?.communication?.recommendation?.area?.options,
+                salesType:
+                  detailData?.communication?.recommendation?.sales_type
+                    ?.options,
+                id: route?.params?.id,
+                url: route?.params?.url,
+                leadAssignId:
+                  detailData?.leads_more_detail[0]?.leads_assignee_id,
+                leadUserId: detailData?.leads_more_detail[0]?.user_id,
+              })
+            }
+          >
+            <Text style={styles.actionButtonText}>Add New Communication</Text>
           </TouchableOpacity>
         </View>
 
-        {/* Lead Information */}
+        {/* ==================== LEAD ADMINISTRATOR INFORMATION ==================== */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Lead Information</Text>
-          <View style={styles.detailRow}>
-            <Text style={styles.label}>Source</Text>
-            <Text style={styles.value}>{lead.source}</Text>
+          <Text style={styles.sectionTitle}>
+            Lead Administrator Information:
+          </Text>
+          <View style={styles.infoRow}>
+            <Text style={styles.label}>Administrator</Text>
+            <Text style={styles.value}>{detailData?.owner?.fullName}</Text>
           </View>
-          <View style={styles.detailRow}>
-            <Text style={styles.label}>Created Date</Text>
-            <Text style={styles.value}>{lead.createdDate}</Text>
+          <View style={styles.infoRow}>
+            <Text style={styles.label}>Email</Text>
+            <Text style={styles.value}>{detailData?.owner?.email}</Text>
           </View>
-          <View style={styles.detailRow}>
-            <Text style={styles.label}>Latest Status</Text>
-            <Text
-              style={[
-                styles.value,
-                { color: statusColors[lead.status] || '#666' },
-              ]}
-            >
-              {lead.latestStatus}
+          <TouchableOpacity
+            style={styles.infoRow}
+            onPress={() => handlePhoneCall(detailData?.owner?.mobile)}
+          >
+            <Text style={styles.label}>Cell</Text>
+            <View style={styles.phoneContainer}>
+              <Phone size={16} color="#25D366" />
+              <Text style={styles.phoneValue}>{detailData?.owner?.mobile}</Text>
+            </View>
+          </TouchableOpacity>
+          <View style={styles.infoRow}>
+            <Text style={styles.label}>Lead Status</Text>
+            <Text style={[styles.statusBadge, styles.attemptedBadge]}>
+              {detailData?.modal?.current_status}
             </Text>
           </View>
         </View>
 
-        {/* Team Assignment */}
+        {/* ==================== LEAD OWNER INFORMATION ==================== */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Team Assignment</Text>
-          <View style={styles.teamRow}>
-            <View style={styles.teamCard}>
-              <Text style={styles.teamRole}>Administrator</Text>
-              <Text style={styles.teamName}>{lead.admin.name}</Text>
-              <Text style={styles.teamEmail}>{lead.admin.email}</Text>
-              {lead.admin.phone ? (
-                <TouchableOpacity onPress={() => makeCall(lead.admin.phone)}>
-                  <Text style={styles.teamPhone}>
-                    <Icon name="phone" size={16} color="#10B981" />{' '}
-                    {lead.admin.phone}
-                  </Text>
+          <Text style={styles.sectionTitle}>Lead Owner Information:</Text>
+          <View style={styles.infoRow}>
+            <Text style={styles.label}>Owner</Text>
+            <Text style={styles.value}>
+              {detailData?.assigned_user?.fullName}
+            </Text>
+          </View>
+          <View style={styles.infoRow}>
+            <Text style={styles.label}>Email</Text>
+            <Text style={styles.value}>{detailData?.assigned_user?.email}</Text>
+          </View>
+          <TouchableOpacity
+            style={styles.infoRow}
+            onPress={() => handlePhoneCall(detailData?.assigned_user?.mobile)}
+          >
+            <Text style={styles.label}>Cell</Text>
+            <View style={styles.phoneContainer}>
+              <Phone size={16} color="#25D366" />
+              <Text style={styles.phoneValue}>
+                {detailData?.assigned_user?.mobile}
+              </Text>
+            </View>
+          </TouchableOpacity>
+        </View>
+
+        {/* ==================== LEAD INFORMATION ==================== */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Lead Information:</Text>
+            {isEditing != null && (
+              <View style={styles.editActions}>
+                <TouchableOpacity
+                  onPress={saveChanges}
+                  style={styles.saveButton}
+                >
+                  <Check size={20} color="#fff" />
+                  <Text style={styles.saveButtonText}>Save</Text>
                 </TouchableOpacity>
-              ) : null}
-            </View>
-            <View style={styles.teamCard}>
-              <Text style={styles.teamRole}>Lead Owner</Text>
-              <Text style={styles.teamName}>{lead.owner.name}</Text>
-              <Text style={styles.teamEmail}>{lead.owner.email}</Text>
+                <TouchableOpacity
+                  onPress={cancelEditing}
+                  style={styles.cancelButton}
+                >
+                  <X size={20} color="#666" />
+                </TouchableOpacity>
+              </View>
+            )}
+          </View>
+
+          <View style={styles.infoRow}>
+            <Text style={styles.label}>Lead Name</Text>
+            {isEditing == 'lead_name' ? (
+              <TextInput
+                style={styles.editInput}
+                value={tempName}
+                onChangeText={setTempName}
+                placeholder="Enter Name"
+                autoCapitalize="none"
+                placeholderTextColor={'gray'}
+              />
+            ) : (
+              <View style={{ flexDirection: 'row', gap: 10 }}>
+                <Text style={styles.value}>
+                  {detailData?.modal?.lead_info?.fields?.lead_name?.value}
+                </Text>
+                <TouchableOpacity
+                  onPress={() => {
+                    setTempName(
+                      detailData?.modal?.lead_info?.fields?.lead_name?.value,
+                    );
+                    setIsEditing('lead_name');
+                  }}
+                >
+                  <Edit2 size={18} color="#007bff" />
+                </TouchableOpacity>
+              </View>
+            )}
+          </View>
+
+          <View style={styles.infoRow}>
+            <Text style={styles.label}>Lead Email</Text>
+            {isEditing == 'email' ? (
+              <TextInput
+                style={styles.editInput}
+                value={tempEmail}
+                onChangeText={setTempEmail}
+                placeholder="Enter email"
+                keyboardType="email-address"
+                autoCapitalize="none"
+                placeholderTextColor={'gray'}
+              />
+            ) : (
+              <View style={{ flexDirection: 'row', gap: 10 }}>
+                <Text
+                  style={[
+                    styles.value,
+                    !detailData?.modal?.lead_info?.fields?.lead_name?.value &&
+                      styles.placeholderText,
+                  ]}
+                >
+                  {detailData?.modal?.lead_info?.fields?.lead_email?.value ||
+                    'Not provided'}
+                </Text>
+                <TouchableOpacity
+                  onPress={() => {
+                    setTempEmail(
+                      detailData?.modal?.lead_info?.fields?.lead_email?.value,
+                    );
+                    setIsEditing('email');
+                  }}
+                >
+                  <Edit2 size={18} color="#007bff" />
+                </TouchableOpacity>
+              </View>
+            )}
+          </View>
+
+          {/* MODIFIED: Lead Cell with Primary + Secondary */}
+          <View style={styles.infoRow}>
+            <Text style={styles.label}>Lead Cell</Text>
+            <View style={{ alignItems: 'flex-end' }}>
+              {isEditing == 'phone' ? (
+                <View style={{ width: '100%' }}>
+                  {/* Primary Cell */}
+                  <View style={{ marginBottom: 10 }}>
+                    <Text
+                      style={{
+                        fontSize: 12,
+                        color: '#666',
+                        marginBottom: 4,
+                      }}
+                    >
+                      Primary
+                    </Text>
+                    <TextInput
+                      style={styles.editInput}
+                      value={tempCell}
+                      onChangeText={setTempCell}
+                      placeholder="e.g. 03332132024"
+                      keyboardType="phone-pad"
+                      placeholderTextColor={'gray'}
+                    />
+                  </View>
+
+                  {/* Secondary Cell */}
+                  <View>
+                    <Text
+                      style={{
+                        fontSize: 12,
+                        color: '#666',
+                        marginBottom: 4,
+                      }}
+                    >
+                      Secondary (Optional)
+                    </Text>
+                    <TextInput
+                      style={styles.editInput}
+                      value={tempSecondaryCell}
+                      onChangeText={setTempSecondaryCell}
+                      placeholder="Enter secondary number"
+                      keyboardType="phone-pad"
+                      placeholderTextColor={'gray'}
+                    />
+                  </View>
+                </View>
+              ) : (
+                <View
+                  style={{
+                    alignItems: 'flex-end',
+                    flexDirection: 'row',
+                    gap: 10,
+                  }}
+                >
+                  {/* Primary Cell */}
+                  <View>
+                    <TouchableOpacity
+                      onPress={() =>
+                        handlePhoneCall(
+                          detailData?.modal?.lead_info?.fields?.lead_cell
+                            ?.value,
+                        )
+                      }
+                      style={styles.phoneContainer}
+                    >
+                      <Phone size={16} color="#25D366" />
+                      <Text style={styles.phoneValue}>
+                        {detailData?.modal?.lead_info?.fields?.lead_cell?.value}
+                      </Text>
+                    </TouchableOpacity>
+
+                    {/* Secondary Cell - Show only if exists (you can add logic later) */}
+                    {tempSecondaryCell ? (
+                      <TouchableOpacity
+                        onPress={() => handlePhoneCall(tempSecondaryCell)}
+                        style={[styles.phoneContainer, { marginTop: 8 }]}
+                      >
+                        <Phone size={16} color="#25D366" />
+                        <Text
+                          style={[
+                            styles.phoneValue,
+                            { fontSize: 13, opacity: 0.8 },
+                          ]}
+                        >
+                          {
+                            detailData?.modal?.lead_info?.fields?.lead_cell
+                              ?.more
+                          }
+                        </Text>
+                      </TouchableOpacity>
+                    ) : null}
+                  </View>
+                  <TouchableOpacity
+                    onPress={() => {
+                      setTempCell(
+                        detailData?.modal?.lead_info?.fields?.lead_cell?.value,
+                      );
+                      setTempSecondaryCell(
+                        detailData?.modal?.lead_info?.fields?.lead_cell?.more,
+                      ); // You can populate from API if secondary exists
+                      setIsEditing('phone');
+                    }}
+                  >
+                    <Edit2 size={18} color="#007bff" />
+                  </TouchableOpacity>
+                </View>
+              )}
             </View>
           </View>
-        </View>
 
-        {/* Customer Notes */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Customer Notes</Text>
-          <View style={styles.notesBox}>
-            <Text style={styles.notesText}>
-              • Interested in 2 apartments{'\n'}• Can come for meeting tomorrow
-              {'\n'}• Down payment: 40 Lac+{'\n'}• Monthly installment: 600,000+
-              {'\n'}• Looking for future living
+          <View style={styles.infoRow}>
+            <Text style={styles.label}>Lead Source</Text>
+            <Text style={styles.value}>
+              {detailData?.modal?.lead_info?.fields?.lead_source?.value}
+            </Text>
+          </View>
+
+          <View style={styles.infoRow}>
+            <Text style={styles.label}>Lead Created Date</Text>
+            <Text style={styles.value}>
+              {detailData?.modal?.lead_info?.fields?.lead_created_date?.value}
+            </Text>
+          </View>
+
+          {/* UPDATED: Lead Latest Status with Edit Icon */}
+          <View style={styles.infoRow}>
+            <Text style={styles.label}>Lead Latest Status</Text>
+            <View
+              style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}
+            >
+              <Text style={[styles.statusBadge, styles.attemptedBadge]}>
+                {currentStatus ||
+                  detailData?.modal?.lead_info?.fields?.lead_latest_status
+                    ?.value ||
+                  'New'}
+              </Text>
+              <TouchableOpacity
+                onPress={() => {
+                  setSelectedStatus(
+                    currentStatus ||
+                      detailData?.modal?.lead_info?.fields?.lead_latest_status
+                        ?.value,
+                  );
+                  setStatusModalVisible(true);
+                }}
+              >
+                <Edit2 size={18} color="#007bff" />
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          <View style={styles.infoRow}>
+            <Text style={styles.label}>Lead Latest Communication</Text>
+            <Text style={styles.communicationText}>
+              {
+                detailData?.modal?.lead_info?.fields?.lead_latest_communication
+                  ?.value
+              }
             </Text>
           </View>
         </View>
 
-        {/* Communication History */}
+        {/* ==================== CALLING HISTORY ==================== */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Communication History</Text>
-          {lead.communications.map((comm, index) => (
-            <View key={index} style={styles.commCard}>
-              <View style={styles.commHeader}>
-                <Icon name="account-circle" size={20} color="#6366F1" />
-                <Text style={styles.commUser}>{comm.user}</Text>
-                <Text style={styles.commDate}>{comm.date}</Text>
-              </View>
-              <Text style={styles.commDetails}>{comm.details}</Text>
-              {comm.selectedDate ? (
-                <View style={styles.selectedDate}>
-                  <Icon name="calendar-clock" size={18} color="#8B5CF6" />
-                  <Text style={styles.selectedDateText}>
-                    {comm.selectedDate}
-                  </Text>
-                </View>
-              ) : null}
+          <TouchableOpacity
+            style={styles.collapsibleHeader}
+            onPress={() => setCallingHistoryExpanded(!callingHistoryExpanded)}
+          >
+            <Text style={styles.sectionTitle}>Calling History:</Text>
+            <View
+              style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}
+            >
+              <TouchableOpacity
+                style={styles.clickToViewButton}
+                onPress={() =>
+                  setCallingHistoryExpanded(!callingHistoryExpanded)
+                }
+              >
+                <Text style={styles.clickToViewText}>Click To View</Text>
+              </TouchableOpacity>
+              {callingHistoryExpanded ? (
+                <ChevronUp size={20} color="#666" />
+              ) : (
+                <ChevronDown size={20} color="#666" />
+              )}
             </View>
-          ))}
+          </TouchableOpacity>
+
+          {callingHistoryExpanded && (
+            <View style={styles.historyContent}>
+              <Text style={styles.historyLabel}>History</Text>
+              {detailData?.lead_calling_detail?.length > 0 ? (
+                detailData?.lead_calling_detail.map((call, index) => (
+                  <View key={index} style={styles.callItem}>
+                    <Text style={styles.callText}>{call?.calling_history}</Text>
+                  </View>
+                ))
+              ) : (
+                <Text style={styles.noDataText}>
+                  No calling history available
+                </Text>
+              )}
+            </View>
+          )}
         </View>
+        {/* ==================== LEAD COMMUNICATION HISTORY ==================== */}
+        {detailData?.lead_note_detail?.length > 0 && (
+          <View style={{ ...styles.section, paddingBottom: hp('0.5') }}>
+            <TouchableOpacity
+              style={styles.collapsibleHeader}
+              onPress={() => setNotesExpanded(!notesExpanded)}
+            >
+              <Text style={styles.sectionTitle}>Lead Notes:</Text>
+              {notesExpanded ? (
+                <ChevronUp size={20} color="#666" />
+              ) : (
+                <ChevronDown size={20} color="#666" />
+              )}
+            </TouchableOpacity>
+          </View>
+        )}
+        {notesExpanded > 0 && (
+          <>
+            <FlatList
+              data={detailData?.lead_note_detail}
+              renderItem={renderNotesItem}
+              keyExtractor={(item, index) => index.toString()}
+              scrollEnabled={false}
+              showsVerticalScrollIndicator={false}
+            />
+          </>
+        )}
+
+        {/* ==================== LEAD COMMUNICATION HISTORY ==================== */}
+        <View style={{ ...styles.section, paddingBottom: hp('0.5') }}>
+          <TouchableOpacity
+            style={styles.collapsibleHeader}
+            onPress={() => setCommunicationExpanded(!communicationExpanded)}
+          >
+            <Text style={styles.sectionTitle}>Lead Communication History:</Text>
+            {communicationExpanded ? (
+              <ChevronUp size={20} color="#666" />
+            ) : (
+              <ChevronDown size={20} color="#666" />
+            )}
+          </TouchableOpacity>
+        </View>
+        {communicationExpanded && (
+          <>
+            <FlatList
+              data={detailData?.leads_more_detail}
+              renderItem={renderCommunicationItem}
+              keyExtractor={(item, index) => index.toString()}
+              scrollEnabled={false}
+              showsVerticalScrollIndicator={false}
+            />
+          </>
+        )}
       </ScrollView>
+
+      {/* ==================== ADD NOTE MODAL ==================== */}
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={noteModalVisible}
+        onRequestClose={() => setNoteModalVisible(false)}
+      >
+        <View style={styles.centeredView}>
+          <View style={styles.modalView}>
+            <Text style={styles.modalTitle}>Add Note</Text>
+            <TextInput
+              style={styles.noteInput}
+              placeholder="Write your note here..."
+              placeholderTextColor="#999"
+              multiline
+              numberOfLines={6}
+              value={noteText}
+              onChangeText={setNoteText}
+            />
+            <View style={styles.modalButtons}>
+              <Pressable
+                style={[styles.button, styles.cancelBtn]}
+                onPress={() => {
+                  setNoteModalVisible(false);
+                  setNoteText('');
+                }}
+              >
+                <Text style={styles.buttonText}>Cancel</Text>
+              </Pressable>
+              <Pressable
+                style={[styles.button, styles.saveBtn]}
+                onPress={saveNote}
+              >
+                <Text style={[styles.buttonText, { color: '#fff' }]}>
+                  Save Note
+                </Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* ==================== FOLLOW UP MODAL ==================== */}
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={followUpModalVisible}
+        onRequestClose={() => setFollowUpModalVisible(false)}
+      >
+        <View style={styles.centeredView}>
+          <View style={styles.modalView}>
+            <Text style={styles.modalTitle}>Set Follow Up Date</Text>
+            <Text style={{ marginBottom: 10, color: '#333' }}>
+              Selected: {followUpDate.toLocaleDateString()}
+            </Text>
+
+            {showDatePicker && (
+              <DateTimePicker
+                value={followUpDate}
+                mode="date"
+                display="default"
+                onChange={onDateChange}
+              />
+            )}
+
+            {Platform.OS !== 'ios' && (
+              <TouchableOpacity
+                style={styles.datePickerBtn}
+                onPress={() => setShowDatePicker(true)}
+              >
+                <Text style={styles.datePickerText}>Choose Date</Text>
+              </TouchableOpacity>
+            )}
+
+            <View style={styles.modalButtons}>
+              <Pressable
+                style={[styles.button, styles.cancelBtn]}
+                onPress={() => setFollowUpModalVisible(false)}
+              >
+                <Text style={styles.buttonText}>Cancel</Text>
+              </Pressable>
+              <Pressable
+                style={[styles.button, styles.saveBtn]}
+                onPress={saveFollowUp}
+              >
+                <Text style={[styles.buttonText, { color: '#fff' }]}>Save</Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* ==================== STATUS PICKER MODAL ==================== */}
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={statusModalVisible}
+        onRequestClose={() => setStatusModalVisible(false)}
+      >
+        <View style={styles.centeredView}>
+          <View style={styles.modalView}>
+            <Text style={styles.modalTitle}>Update Lead Status</Text>
+
+            <View
+              style={{
+                borderWidth: 1,
+                borderColor: '#999',
+                borderRadius: 6,
+                width: wp('80'),
+                color: 'black',
+                // backgroundColor: 'black',
+                // overflow: 'hidden',
+              }}
+            >
+              <Picker
+                selectedValue={selectedStatus}
+                onValueChange={itemValue => setSelectedStatus(itemValue)}
+                dropdownIconColor="#666"
+                itemStyle={{
+                  color: 'black', // This controls the text color in the dropdown list
+                  fontSize: 16,
+                  backgroundColor: 'red',
+                }}
+                style={{
+                  picker: {
+                    height: 50,
+                    ...Platform.select({
+                      android: {
+                        color: 'black',
+                        width: wp('40'),
+                      },
+                      ios: { height: 160 },
+                    }),
+                  },
+                  color: 'black',
+                }}
+              >
+                <Picker.Item label={'Select'} value={null} />
+                {statusOptions.map(status => {
+                  return (
+                    <Picker.Item
+                      label={status.label}
+                      value={status.value}
+                      // style={{ color: 'black' }}
+                    />
+                  );
+                })}
+              </Picker>
+            </View>
+
+            <View style={styles.modalButtons}>
+              <Pressable
+                style={[styles.button, styles.cancelBtn]}
+                onPress={() => {
+                  setStatusModalVisible(false);
+                }}
+              >
+                <Text style={styles.buttonText}>Cancel</Text>
+              </Pressable>
+              <Pressable
+                style={[styles.button, styles.saveBtn]}
+                onPress={saveStatus}
+              >
+                <Text style={[styles.buttonText, { color: '#fff' }]}>
+                  Update Status
+                </Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };
 
-export default memo(LeadDetailScreen);
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F8FAFC' },
-  header: { padding: 20, paddingTop: 10 },
-  headerTitle: {
-    fontSize: 26,
-    fontWeight: 'bold',
-    color: '#fff',
-    marginBottom: 8,
-  },
-  statusBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    alignSelf: 'flex-start',
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 20,
-  },
-  statusText: { color: '#fff', marginLeft: 8, fontWeight: '600', fontSize: 15 },
-  scrollView: { flex: 1 },
-  actionButtons: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    padding: 16,
-    gap: 12,
-  },
-  actionBtnPrimary: {
-    backgroundColor: '#10B981',
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 18,
-    paddingVertical: 14,
-    borderRadius: 12,
-    gap: 10,
-    shadowColor: '#000',
-    shadowOpacity: 0.2,
-    elevation: 5,
-  },
-  actionBtn: {
-    backgroundColor: '#E0E7FF',
-    paddingHorizontal: 18,
-    paddingVertical: 14,
-    borderRadius: 12,
-  },
-  actionBtnText: { color: '#fff', fontWeight: '600', fontSize: 15 },
-  actionBtnTextSecondary: { color: '#4F46E5', fontWeight: '600', fontSize: 15 },
-  infoRow: {
-    flexDirection: 'row',
-    paddingHorizontal: 16,
-    gap: 12,
-    marginBottom: 20,
-  },
-  infoCard: {
-    flex: 1,
-    backgroundColor: '#fff',
-    padding: 20,
-    borderRadius: 16,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.12,
-    shadowRadius: 10,
-    elevation: 6,
-  },
-  infoText: {
-    marginTop: 10,
-    fontSize: 14,
-    color: '#374151',
-    textAlign: 'center',
-  },
-  section: { marginHorizontal: 16, marginBottom: 24 },
-  sectionTitle: {
-    fontSize: 19,
-    fontWeight: 'bold',
-    color: '#1F2937',
-    marginBottom: 14,
-  },
-  detailRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    backgroundColor: '#fff',
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 10,
-    shadowColor: '#000',
-    shadowOpacity: 0.08,
-    elevation: 3,
-  },
-  label: { color: '#6B7280', fontSize: 15 },
-  value: { color: '#111827', fontWeight: '600', fontSize: 15 },
-  teamRow: { flexDirection: 'row', gap: 12 },
-  teamCard: {
-    flex: 1,
-    backgroundColor: '#fff',
-    padding: 18,
-    borderRadius: 14,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    elevation: 4,
-  },
-  teamRole: { color: '#6B7280', fontSize: 13, fontWeight: '500' },
-  teamName: {
-    fontWeight: 'bold',
-    fontSize: 17,
-    marginTop: 6,
-    color: '#1F2937',
-  },
-  teamEmail: { color: '#4B5563', marginTop: 4, fontSize: 14 },
-  teamPhone: {
-    color: '#10B981',
-    marginTop: 10,
-    fontWeight: '600',
-    fontSize: 15,
-  },
-  notesBox: {
-    backgroundColor: '#F0FDF4',
-    padding: 18,
-    borderRadius: 14,
-    borderWidth: 1.5,
-    borderColor: '#86EFAC',
-  },
-  notesText: {
-    color: '#166534',
-    lineHeight: 24,
-    fontSize: 15.5,
-    fontWeight: '500',
-  },
-  commCard: {
-    backgroundColor: '#fff',
-    padding: 18,
-    borderRadius: 14,
-    marginBottom: 14,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    elevation: 4,
-  },
-  commHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
-  commUser: { fontWeight: 'bold', marginLeft: 10, flex: 1, fontSize: 16 },
-  commDate: { color: '#6B7280', fontSize: 13 },
-  commDetails: { color: '#4B5563', lineHeight: 22, fontSize: 15 },
-  selectedDate: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 12,
-    backgroundColor: '#F3E8FF',
-    alignSelf: 'flex-start',
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 20,
-  },
-  selectedDateText: {
-    marginLeft: 8,
-    color: '#6B21A8',
-    fontWeight: '600',
-    fontSize: 14,
-  },
-});
+export default LeadDetailScreen;

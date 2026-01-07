@@ -32,10 +32,13 @@
     "postinstall": "react-native setup-ios-permissions && npx pod-install"
   },
   "dependencies": {
+    "@gorhom/bottom-sheet": "^5.2.8",
     "@hookform/resolvers": "^5.2.1",
     "@react-native-async-storage/async-storage": "^2.2.0",
+    "@react-native-community/datetimepicker": "^8.5.1",
     "@react-native-community/image-editor": "^4.3.0",
-    "@react-native-documents/picker": "^10.1.7",
+    "@react-native-community/netinfo": "^11.4.1",
+    "@react-native-documents/picker": "^11.0.3",
     "@react-native-picker/picker": "^2.11.4",
     "@react-native/new-app-screen": "0.80.2",
     "@react-navigation/bottom-tabs": "^7.4.4",
@@ -77,7 +80,7 @@
     "react-native-paper": "^5.14.5",
     "react-native-paper-dropdown": "^2.3.1",
     "react-native-pdf": "^6.7.7",
-    "react-native-permissions": "^5.4.2",
+    "react-native-permissions": "^5.4.4",
     "react-native-qrcode-scanner": "^1.5.5",
     "react-native-reanimated": "~2.2.0",
     "react-native-render-html": "^6.3.4",
@@ -97,6 +100,7 @@
     "redux-persist": "^6.0.0",
     "redux-thunk": "^3.1.0",
     "rn-fetch-blob": "^0.12.0",
+    "xlsx": "^0.18.5",
     "yup": "^1.6.1"
   },
   "devDependencies": {

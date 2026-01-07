@@ -1,6 +1,10 @@
 // src/screens/LeadListScreen/useLeadListScreen.js
+import { useMutation } from '@tanstack/react-query';
 import { useState, useEffect, useCallback } from 'react';
 import { Alert } from 'react-native';
+import useReduxStore from '../../Hooks/UseReduxStore';
+import { errorMessage } from '../../Config/NotificationMessage';
+import API from '../../Utils/helperFunc';
 
 /**
  * Mock API – replace with your real endpoint later
@@ -66,11 +70,15 @@ const fetchLeads = async (page = 1, filters = {}) => {
   };
 };
 
-const useLeadListScreen = () => {
+const useLeadListScreen = ({ params }) => {
+  const { getState, dispatch } = useReduxStore();
+  const { userData, token } = getState('Auth');
+
   const [leads, setLeads] = useState([]);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
   const [filters, setFilters] = useState({}); // you can extend later
 
   const loadPage = useCallback(
@@ -91,9 +99,9 @@ const useLeadListScreen = () => {
   );
 
   // initial load
-  useEffect(() => {
-    loadPage(1);
-  }, [loadPage]);
+  // useEffect(() => {
+  //   loadPage(1);
+  // }, [loadPage]);
 
   const onRefresh = () => loadPage(1);
   const onEndReached = () => {
@@ -102,6 +110,49 @@ const useLeadListScreen = () => {
     }
   };
 
+  const { mutate } = useMutation({
+    mutationFn: data => {
+      console.log('lkjsdvlkdsbvklsdbvkldsbvklsdbvbsdklvsd', {
+        rqst_ke_fntn_vl: `usr_lg_attempt`,
+        userLoginToken: token,
+        userLoginIDC: userData?.id,
+        crm_software_clients_id: userData?.crm_software_clients_id,
+        userRoleIndicate: userData?.crm_user_role,
+
+        allowtoEntCrmSctino: userData?.id,
+        selectedLeadsCategory: userData?.leads_category_id,
+        ...data,
+      });
+      return API.post(params?.url, {
+        rqst_ke_fntn_vl: `usr_lg_attempt`,
+        userLoginToken: token,
+        userLoginIDC: userData?.id,
+        crm_software_clients_id: userData?.crm_software_clients_id,
+        userRoleIndicate: userData?.crm_user_role,
+
+        allowtoEntCrmSctino: userData?.id,
+        selectedLeadsCategory: userData?.leads_category_id,
+        ...data,
+      });
+    },
+    onSuccess: ({ ok, data }) => {
+      console.log('iuudshisodfiodsfiodsfsdlvsdlkvnldsknvklsdv', data);
+      if (ok) {
+        setLeads(data?.crm_data?.data);
+        setTotal(data?.crm_data?.total);
+        setPage(data?.crm_data?.current_page);
+        setTotalPages(data?.crm_data?.last_page);
+        // setPageData(data?.crm_data?.last_page);
+      }
+      // else errorMessage(data?.message);
+    },
+    onError: e => errorMessage(e),
+  });
+
+  useEffect(() => {
+    mutate(params?.leadListType);
+  }, []);
+
   return {
     leads,
     loading,
@@ -109,6 +160,9 @@ const useLeadListScreen = () => {
     onRefresh,
     onEndReached,
     setFilters, // expose for filter UI later
+    page,
+    totalPages,
+    mutate,
   };
 };
 

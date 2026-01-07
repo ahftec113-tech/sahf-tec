@@ -32,6 +32,10 @@ const useDashboardScreen = () => {
             id: 'attendance',
             top_menus: 'Mark Attendance',
           },
+          {
+            id: 'callSync',
+            top_menus: 'Call Sync',
+          },
         ]);
         const modifyData = data?.data?.LeadsCategory.map(res => ({
           label: res?.leads_category,
@@ -79,6 +83,10 @@ const useDashboardScreen = () => {
     });
   }, []);
 
+  console.log(
+    'upperTabsArryupperTabsArryupperTabsArryupperTabsArryupperTabsArryupperTabsArry',
+    upperTabsArry,
+  );
   return {
     upperTabsArry,
     pageData,
